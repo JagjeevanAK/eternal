@@ -1,7 +1,7 @@
 // Deploy script for asset-tokenization program
-const anchor = require("@coral-xyz/anchor");
+import * as anchor from "@coral-xyz/anchor";
 
-module.exports = async function (provider) {
+export default async function deploy(provider: anchor.AnchorProvider) {
   anchor.setProvider(provider);
   // Deployment logic handled by Anchor
-};
+}
