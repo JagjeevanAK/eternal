@@ -3,16 +3,16 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-asset_tokenization = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+asset_tokenization = "EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ"
 
 [programs.devnet]
-asset_tokenization = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+asset_tokenization = "EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

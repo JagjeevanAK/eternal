@@ -8,7 +8,7 @@ mod state;
 use account::*;
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ");
 
 /// # Asset Tokenization Program
 /// 

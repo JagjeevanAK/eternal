@@ -182,11 +182,12 @@ Default values in `state/config.rs`:
 
 ## Program ID
 
-- Localnet/Devnet: `Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS`
+- Devnet: `EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ`
 
-> **Note**: Generate a new keypair for production deployment:
+> **Note**: For production deployment, generate a new keypair and update all references:
 > ```bash
 > solana-keygen new -o target/deploy/asset_tokenization-keypair.json
+> anchor keys sync
 > ```
 
 ## License
