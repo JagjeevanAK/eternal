@@ -4,17 +4,21 @@
 help:
 	@echo "Asset Tokenization - Development Commands"
 	@echo ""
+	@echo "First-time Setup (recommended):"
+	@echo "  make setup          - Full setup (install all deps + keys + build)"
+	@echo ""
 	@echo "Setup & Install:"
-	@echo "  make setup          - Full setup (install deps + generate keys + build)"
-	@echo "  make install        - Install all dependencies"
-	@echo "  make keys           - Generate Solana keypair if missing"
+	@echo "  make install        - Install all dependencies (frontend + contract)"
+	@echo "  make keys           - Generate Solana keypair if missing & configure devnet"
 	@echo ""
 	@echo "Development:"
 	@echo "  make build          - Build the Solana program"
+	@echo "  make dev            - Start Next.js frontend dev server"
 	@echo "  make test           - Run all tests (starts local validator)"
 	@echo "  make test-skip      - Run tests (assumes validator running)"
 	@echo "  make clean          - Remove build artifacts"
 	@echo "  make validator      - Start local Solana validator"
+	@echo "  make versions       - Check installed tool versions"
 	@echo ""
 	@echo "Deployment:"
 	@echo "  make deploy-localnet - Deploy to localnet"
@@ -24,13 +28,13 @@ help:
 	@echo "  - Rust (rustup.rs)"
 	@echo "  - Solana CLI (solana-install)"
 	@echo "  - Anchor CLI (avm use 0.32.1)"
-	@echo "  - Bun (bun.sh)"
+	@echo "  - Node.js / Bun (bun.sh)"
 
 # Full project setup
 setup: install keys build
 	@echo "[OK] Setup complete. Run 'make test' to verify."
 
-# Install all dependencies
+# Install all dependencies (frontend + contract)
 install:
 	@echo "[*] Installing dependencies..."
 	@if ! command -v solana &> /dev/null; then \
@@ -41,14 +45,13 @@ install:
 		echo "[ERROR] Anchor CLI not found. Install with: cargo install --git https://github.com/coral-xyz/anchor avm && avm install 0.32.1 && avm use 0.32.1"; \
 		exit 1; \
 	fi
-	@if ! command -v bun &> /dev/null; then \
-		echo "[ERROR] Bun not found. Install from https://bun.sh"; \
-		exit 1; \
-	fi
+	@echo "[*] Installing frontend dependencies..."
+	npm install
+	@echo "[*] Installing contract dependencies..."
 	cd asset-tokenization && bun install
-	@echo "[OK] Dependencies installed"
+	@echo "[OK] All dependencies installed"
 
-# Generate Solana keypair if not exists
+# Generate Solana keypair if not exists, configure for devnet
 keys:
 	@echo "[*] Checking Solana keypair..."
 	@if [ ! -f ~/.config/solana/id.json ]; then \
@@ -57,7 +60,11 @@ keys:
 	else \
 		echo "Keypair exists: $$(solana address)"; \
 	fi
-	@solana config set --url localhost
+	@echo "[*] Configuring Solana CLI for devnet..."
+	@solana config set --url devnet
+	@echo "[*] Requesting devnet airdrop (2 SOL)..."
+	@solana airdrop 2 || echo "[WARN] Airdrop failed — you may need to retry or use https://faucet.solana.com"
+	@echo "[OK] Solana configured for devnet. Balance: $$(solana balance)"
 
 # Build the Solana program
 build:
@@ -102,10 +109,21 @@ deploy-devnet:
 	cd asset-tokenization && anchor deploy --provider.cluster devnet
 	@echo "[OK] Deployed to devnet"
 
+# Start frontend dev server
+dev:
+	@echo "[*] Starting Next.js dev server..."
+	npm run dev
+
 # Check versions
 versions:
 	@echo "Tool Versions:"
-	@echo "  Rust: $$(rustc --version)"
-	@echo "  Solana: $$(solana --version)"
-	@echo "  Anchor: $$(anchor --version)"
-	@echo "  Bun: $$(bun --version)"
+	@echo "  Rust:   $$(rustc --version 2>/dev/null || echo 'not installed')"
+	@echo "  Solana: $$(solana --version 2>/dev/null || echo 'not installed')"
+	@echo "  Anchor: $$(anchor --version 2>/dev/null || echo 'not installed')"
+	@echo "  Node:   $$(node --version 2>/dev/null || echo 'not installed')"
+	@echo "  Bun:    $$(bun --version 2>/dev/null || echo 'not installed')"
+	@echo ""
+	@echo "Solana Config:"
+	@echo "  Cluster: $$(solana config get | grep 'RPC URL' || echo 'unknown')"
+	@echo "  Wallet:  $$(solana address 2>/dev/null || echo 'no keypair')"
+	@echo "  Balance: $$(solana balance 2>/dev/null || echo 'unknown')"

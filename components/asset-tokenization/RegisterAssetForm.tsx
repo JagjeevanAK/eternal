@@ -3,13 +3,12 @@
 import React, { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { BN } from '@coral-xyz/anchor';
-import { SystemProgram } from '@solana/web3.js';
+import { PublicKey, SystemProgram } from '@solana/web3.js';
 import CryptoJS from 'crypto-js';
 import { toast } from 'sonner';
 import { useAssetProgram } from './hooks/useAssetProgram';
 import {
   AssetType,
-  getAssetTypeName,
   derivePlatformConfigPda,
   deriveAssetPda,
 } from '@/types/asset-tokenization';
@@ -81,6 +80,7 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
 
       // Fetch platform config to get treasury
       const config = await program.account.platformConfig.fetch(platformConfig);
+      const treasury = config.treasury as PublicKey;
 
       const tx = await program.methods
         .registerAsset(
@@ -97,7 +97,7 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
           owner: publicKey,
           platformConfig: platformConfig,
           asset: assetPda,
-          treasury: config.treasury,
+          treasury,
           systemProgram: SystemProgram.programId,
         })
         .rpc();
@@ -118,10 +118,10 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
       });
 
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Registration failed:', err);
       toast.error('Failed to register asset', {
-        description: err.message || 'Transaction failed',
+        description: err instanceof Error ? err.message : 'Transaction failed',
       });
     } finally {
       setLoading(false);

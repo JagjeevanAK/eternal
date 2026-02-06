@@ -68,49 +68,65 @@ bun --version
 git clone https://github.com/your-username/eternal-key.git
 cd eternal-key
 
-# Full setup (install deps + generate keys + build)
+# Full setup (install frontend + contract deps, generate keys, configure devnet, build)
 make setup
 
-# Run tests
+# Start the frontend
+make dev
+
+# (Optional) Run contract tests against local validator
 make test
 ```
+
+> **Note**: The Solana program is already deployed on **devnet** at:
+> `EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ`
+> 
+> `make setup` will configure your Solana CLI for devnet and airdrop 2 SOL so you can interact with it immediately.
 
 ## Manual Setup (without Make)
 
 If you prefer not to use Make:
 
 ```bash
-# 1. Install JS dependencies
+# 1. Install frontend dependencies
+npm install
+
+# 2. Install contract dependencies
 cd asset-tokenization
 bun install
+cd ..
 
-# 2. Generate Solana keypair (if you don't have one)
+# 3. Generate Solana keypair (if you don't have one)
 solana-keygen new --no-bip39-passphrase
 
-# 3. Configure Solana for local development
-solana config set --url localhost
+# 4. Configure Solana for devnet
+solana config set --url devnet
+solana airdrop 2
 
-# 4. Build the program
+# 5. Build the program
+cd asset-tokenization
 anchor build
+cd ..
 
-# 5. Run tests (starts local validator automatically)
-anchor test
+# 6. Start the frontend
+npm run dev
 ```
 
 ## Available Make Commands
 
 | Command | Description |
 |---------|-------------|
-| `make setup` | Full setup (install deps + generate keys + build) |
-| `make install` | Install all dependencies |
+| `make setup` | Full setup (install all deps + keys + devnet config + build) |
+| `make install` | Install all dependencies (frontend + contract) |
 | `make build` | Build the Solana program |
+| `make dev` | Start Next.js frontend dev server |
 | `make test` | Run all tests (starts local validator) |
 | `make test-skip` | Run tests (assumes validator running) |
 | `make clean` | Remove build artifacts |
 | `make validator` | Start local Solana validator |
 | `make deploy-localnet` | Deploy to localnet |
 | `make deploy-devnet` | Deploy to Solana devnet |
-| `make versions` | Check installed tool versions |
+| `make versions` | Check installed tool versions & Solana config |
 
 ## Troubleshooting
 

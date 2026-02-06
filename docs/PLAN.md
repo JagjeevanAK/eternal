@@ -141,7 +141,7 @@ app/
 
 ### Program ID
 ```typescript
-const ASSET_PROGRAM_ID = new PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS');
+const ASSET_PROGRAM_ID = new PublicKey('EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ');
 ```
 
 ### PDA Seeds

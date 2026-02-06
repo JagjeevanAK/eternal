@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAssets, AssetAccount } from '../asset-tokenization/hooks/useAssets';
 import { AssetGrid } from '../asset-tokenization/AssetGrid';
 import { BuyFractionsModal } from '../asset-tokenization/BuyFractionsModal';
-import { IconStore } from '@tabler/icons-react';
+import { IconBuildingStore } from '@tabler/icons-react';
 
 interface MarketplacePageProps {
   onAssetDetails?: (asset: AssetAccount) => void;
@@ -19,7 +19,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ onAssetDetails
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-          <IconStore className="w-7 h-7 text-green-400" />
+          <IconBuildingStore className="w-7 h-7 text-green-400" />
           Marketplace
         </h1>
         <p className="text-sm text-zinc-400 mt-1">

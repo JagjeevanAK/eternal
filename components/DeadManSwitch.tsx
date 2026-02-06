@@ -95,6 +95,7 @@ const DeadManSwitch: FC = () => {
     if (program && publicKey && connection) {
       fetchEscrows();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [program, publicKey, connection]);
 
   useEffect(() => {

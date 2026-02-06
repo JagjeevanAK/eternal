@@ -108,10 +108,10 @@ export const OwnershipTransfer: React.FC<OwnershipTransferProps> = ({
       setAmount('');
       onSuccess?.();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Transfer failed:', err);
       toast.error('Failed to transfer', {
-        description: err.message || 'Transaction failed',
+        description: err instanceof Error ? err.message : 'Transaction failed',
       });
     } finally {
       setLoading(false);

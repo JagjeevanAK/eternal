@@ -537,7 +537,9 @@ export const deriveDocumentPda = (
   );
 };
 
-// Program ID (update this after deployment)
+// Program ID — deployed on Solana devnet.
+// If you redeploy, run `anchor keys list` and update this value,
+// the `declare_id!()` in lib.rs, and the Anchor.toml entries.
 export const ASSET_TOKENIZATION_PROGRAM_ID = new PublicKey(
-  "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+  "EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ"
 );

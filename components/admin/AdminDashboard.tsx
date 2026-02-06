@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
 import { useAssetProgram } from '../asset-tokenization/hooks/useAssetProgram';
-import { derivePlatformConfigPda, PlatformConfig } from '@/types/asset-tokenization';
+import { derivePlatformConfigPda } from '@/types/asset-tokenization';
 import { PlatformStats } from './PlatformStats';
 import { VerifyAsset } from './VerifyAsset';
 import { IconShieldLock, IconAlertTriangle } from '@tabler/icons-react';
@@ -24,7 +25,7 @@ export const AdminDashboard: React.FC = () => {
       try {
         const [platformConfigPda] = derivePlatformConfigPda(programId);
         const config = await program.account.platformConfig.fetch(platformConfigPda);
-        const authority = config.authority as any;
+        const authority = new PublicKey(config.authority as unknown as string | PublicKey);
         setIsAuthority(authority.equals(publicKey));
       } catch {
         setIsAuthority(false);

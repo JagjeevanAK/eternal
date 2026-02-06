@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import { NetworkConfigurationProvider } from '@/contexts/NetworkConfigurationProvider';
 import Link from 'next/link';
-import { IconBriefcase, IconLoader2 } from '@tabler/icons-react';
-import { BN } from '@coral-xyz/anchor';
 
 const WalletConnectionProvider = dynamic(
   () => import('@/components/WalletConnectionProvider'),

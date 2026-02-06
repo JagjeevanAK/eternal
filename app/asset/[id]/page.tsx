@@ -1,18 +1,14 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import { NetworkConfigurationProvider } from '@/contexts/NetworkConfigurationProvider';
+import { PublicKey } from '@solana/web3.js';
 
 const WalletConnectionProvider = dynamic(
   () => import('@/components/WalletConnectionProvider'),
-  { ssr: false }
-);
-
-const MarketplaceContent = dynamic(
-  () => import('@/components/marketplace/MarketplacePage').then((mod) => ({ default: mod.MarketplacePage })),
   { ssr: false }
 );
 
@@ -21,11 +17,25 @@ const WalletMultiButton = dynamic(
   { ssr: false }
 );
 
+const AssetDetailView = dynamic(
+  () => import('./AssetDetailView').then((mod) => ({ default: mod.AssetDetailView })),
+  { ssr: false }
+);
+
 import { NetworkSwitcher } from '@/components/NetworkSwitcher';
 import Link from 'next/link';
 
-export default function MarketplacePage() {
-  const router = useRouter();
+export default function AssetDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+
+  // Validate the id is a valid base58 pubkey
+  let assetPubkey: PublicKey | null = null;
+  try {
+    assetPubkey = new PublicKey(id);
+  } catch {
+    // invalid pubkey
+  }
 
   return (
     <NetworkConfigurationProvider>
@@ -37,12 +47,15 @@ export default function MarketplacePage() {
                 <Link href="/" className="text-xl font-medium text-white hover:text-zinc-300 transition-colors">
                   Eternal Key
                 </Link>
-                <span className="px-2.5 py-0.5 rounded-full text-xs bg-green-900/50 text-green-400 border border-green-800">
-                  Marketplace
+                <span className="px-2.5 py-0.5 rounded-full text-xs bg-purple-900/50 text-purple-400 border border-purple-800">
+                  Asset Details
                 </span>
                 <NetworkSwitcher />
               </div>
               <div className="flex items-center space-x-3">
+                <Link href="/marketplace" className="px-4 py-2 text-sm text-zinc-300 hover:text-white transition-colors">
+                  Marketplace
+                </Link>
                 <Link href="/register" className="px-4 py-2 text-sm text-zinc-300 hover:text-white transition-colors">
                   Register Asset
                 </Link>
@@ -58,9 +71,20 @@ export default function MarketplacePage() {
           </nav>
 
           <main className="max-w-6xl mx-auto p-6">
-            <MarketplaceContent
-              onAssetDetails={(asset) => router.push(`/asset/${asset.publicKey.toBase58()}`)}
-            />
+            {assetPubkey ? (
+              <AssetDetailView assetPubkey={assetPubkey} />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+                <p className="text-lg font-medium text-white">Invalid Asset ID</p>
+                <p className="text-sm mt-1">The asset address provided is not valid.</p>
+                <Link
+                  href="/marketplace"
+                  className="mt-4 px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700 transition-colors"
+                >
+                  Back to Marketplace
+                </Link>
+              </div>
+            )}
           </main>
         </div>
       </WalletConnectionProvider>

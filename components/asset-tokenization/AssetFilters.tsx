@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AssetType, AssetStatus, getAssetTypeName, getAssetStatusName } from '@/types/asset-tokenization';
+import { AssetType, AssetStatus } from '@/types/asset-tokenization';
 import { cn } from '@/lib/utils';
 import { IconFilter, IconX } from '@tabler/icons-react';
 

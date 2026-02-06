@@ -5,7 +5,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { BN } from '@coral-xyz/anchor';
 import { useMyPortfolio, OwnershipAccount } from '@/components/asset-tokenization/hooks/useMyPortfolio';
 import { useAssetProgram } from '@/components/asset-tokenization/hooks/useAssetProgram';
-import { Asset, getAssetTypeName, AssetType, parseAssetType } from '@/types/asset-tokenization';
+import { Asset, getAssetTypeName, parseAssetType } from '@/types/asset-tokenization';
 import { SellFractionsModal } from '@/components/asset-tokenization/SellFractionsModal';
 import { OwnershipTransfer } from '@/components/asset-tokenization/OwnershipTransfer';
 import {
@@ -47,16 +47,17 @@ export default function PortfolioContent() {
       }
 
       setLoadingAssets(true);
-      const results: HoldingWithAsset[] = [];
 
-      for (const h of holdings) {
-        try {
-          const assetData = await program.account.asset.fetch(h.account.asset);
-          results.push({ ownership: h, asset: assetData as unknown as Asset });
-        } catch {
-          results.push({ ownership: h, asset: null });
-        }
-      }
+      const results = await Promise.all(
+        holdings.map(async (h) => {
+          try {
+            const assetData = await program.account.asset.fetch(h.account.asset);
+            return { ownership: h, asset: assetData as unknown as Asset };
+          } catch {
+            return { ownership: h, asset: null };
+          }
+        })
+      );
 
       setHoldingsWithAssets(results);
       setLoadingAssets(false);

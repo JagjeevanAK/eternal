@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { BN } from '@coral-xyz/anchor';
 import { AssetCard } from './AssetCard';
 import { AssetFilters, AssetFilterValues, defaultFilters } from './AssetFilters';
 import { AssetAccount } from './hooks/useAssets';
-import { AssetStatus, AssetType, parseAssetStatus, parseAssetType } from '@/types/asset-tokenization';
+import { parseAssetStatus, parseAssetType } from '@/types/asset-tokenization';
 import { IconLoader2, IconMoodEmpty } from '@tabler/icons-react';
 
 interface AssetGridProps {
@@ -121,7 +120,6 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
               <AssetCard
                 key={asset.publicKey.toBase58()}
                 asset={asset.account}
-                publicKey={asset.publicKey}
                 onBuy={() => onBuy?.(asset)}
                 onDetails={() => onDetails?.(asset)}
               />

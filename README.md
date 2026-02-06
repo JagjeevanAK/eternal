@@ -102,7 +102,7 @@ eternal-key/
 
 ## Technical Details
 
-**Program ID**: `Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS`
+**Program ID**: `EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ`
 
 **Key Accounts**:
 - `PlatformConfig` - Global platform settings and fees

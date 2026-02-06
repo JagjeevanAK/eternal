@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Program, AnchorProvider, Idl } from '@coral-xyz/anchor';
-import { PublicKey } from '@solana/web3.js';
 import { ASSET_TOKENIZATION_PROGRAM_ID } from '@/types/asset-tokenization';
 
 // Use the v0.28-compatible IDL (camelCase, isMut/isSigner, publicKey type).

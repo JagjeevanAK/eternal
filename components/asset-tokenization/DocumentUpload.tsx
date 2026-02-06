@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
-import { BN } from '@coral-xyz/anchor';
 import CryptoJS from 'crypto-js';
 import { toast } from 'sonner';
 import { useAssetProgram } from './hooks/useAssetProgram';
@@ -11,7 +10,6 @@ import {
   Asset,
   derivePlatformConfigPda,
   deriveDocumentPda,
-  deriveAssetPda,
 } from '@/types/asset-tokenization';
 import { IconX, IconLoader2, IconFileUpload } from '@tabler/icons-react';
 
@@ -24,7 +22,8 @@ interface DocumentUploadProps {
 }
 
 export const DocumentUpload: React.FC<DocumentUploadProps> = ({
-  asset,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  asset: _asset,
   assetPubkey,
   isOpen,
   onClose,
@@ -88,10 +87,10 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       setFormData({ docType: '', uri: '', content: '' });
       onSuccess?.();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Document upload failed:', err);
       toast.error('Failed to add document', {
-        description: err.message || 'Transaction failed',
+        description: err instanceof Error ? err.message : 'Transaction failed',
       });
     } finally {
       setLoading(false);

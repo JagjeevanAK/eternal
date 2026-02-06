@@ -5,7 +5,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 import { useAssetProgram } from './useAssetProgram';
-import { Ownership, ASSET_TOKENIZATION_PROGRAM_ID, deriveOwnershipPda } from '@/types/asset-tokenization';
+import { Ownership } from '@/types/asset-tokenization';
 
 export interface OwnershipAccount {
   publicKey: PublicKey;
@@ -39,7 +39,8 @@ export const useMyPortfolio = () => {
         },
       ]);
 
-      const mapped: OwnershipAccount[] = allOwnerships.map((o: any) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapped: OwnershipAccount[] = allOwnerships.map((o: Record<string, any>) => ({
         publicKey: o.publicKey,
         account: {
           asset: o.account.asset,
@@ -51,9 +52,9 @@ export const useMyPortfolio = () => {
       }));
 
       setHoldings(mapped);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to fetch portfolio:', err);
-      setError(err.message || 'Failed to fetch portfolio');
+      setError(err instanceof Error ? err.message : 'Failed to fetch portfolio');
     } finally {
       setLoading(false);
     }

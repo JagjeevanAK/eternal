@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { PublicKey, Keypair, SYSVAR_RENT_PUBKEY, SystemProgram } from '@solana/web3.js';
-import { BN } from '@coral-xyz/anchor';
 import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { toast } from 'sonner';
@@ -120,10 +119,10 @@ export const TokenizeAssetButton: React.FC<TokenizeAssetButtonProps> = ({
       setShowModal(false);
       setFormData({ name: '', symbol: '', uri: '' });
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Tokenization failed:', err);
       toast.error('Failed to tokenize asset', {
-        description: err.message || 'Transaction failed',
+        description: err instanceof Error ? err.message : 'Transaction failed',
       });
     } finally {
       setLoading(false);

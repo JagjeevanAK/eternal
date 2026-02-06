@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 import { Asset, AssetStatus, AssetType, getAssetTypeName, getAssetStatusName, parseAssetStatus, parseAssetType } from '@/types/asset-tokenization';
 import { cn } from '@/lib/utils';
@@ -19,7 +18,6 @@ import {
 
 interface AssetCardProps {
   asset: Asset;
-  publicKey: PublicKey;
   onBuy?: () => void;
   onDetails?: () => void;
 }
@@ -59,7 +57,7 @@ const formatLamports = (lamports: BN): string => {
 
 
 
-export const AssetCard: React.FC<AssetCardProps> = ({ asset, publicKey, onBuy, onDetails }) => {
+export const AssetCard: React.FC<AssetCardProps> = ({ asset, onBuy, onDetails }) => {
   const statusNum = parseAssetStatus(asset.status);
   const typeNum = parseAssetType(asset.assetType);
   const soldFractions = asset.totalFractions.sub(asset.availableFractions);

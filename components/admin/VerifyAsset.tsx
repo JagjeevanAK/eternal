@@ -2,19 +2,16 @@
 
 import React, { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
 import { toast } from 'sonner';
 import { useAssetProgram } from '../asset-tokenization/hooks/useAssetProgram';
 import { useAssets, AssetAccount } from '../asset-tokenization/hooks/useAssets';
 import {
   AssetStatus,
   getAssetTypeName,
-  getAssetStatusName,
   derivePlatformConfigPda,
   parseAssetStatus,
   parseAssetType,
 } from '@/types/asset-tokenization';
-import { cn } from '@/lib/utils';
 import { IconLoader2, IconShieldCheck, IconMoodEmpty } from '@tabler/icons-react';
 import { BN } from '@coral-xyz/anchor';
 
@@ -60,10 +57,10 @@ export const VerifyAsset: React.FC = () => {
       });
 
       refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Verify failed:', err);
       toast.error('Failed to verify asset', {
-        description: err.message || 'Transaction failed',
+        description: err instanceof Error ? err.message : 'Transaction failed',
       });
     } finally {
       setVerifyingId(null);

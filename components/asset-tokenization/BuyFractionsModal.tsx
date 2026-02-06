@@ -65,6 +65,7 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
     try {
       const [platformConfig] = derivePlatformConfigPda(programId);
       const config = await program.account.platformConfig.fetch(platformConfig);
+      const treasury = config.treasury as PublicKey;
 
       const buyerTokenAccount = await getAssociatedTokenAddress(
         asset.tokenMint,
@@ -90,7 +91,7 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
           buyerTokenAccount,
           tokenMint: asset.tokenMint,
           ownership,
-          treasury: config.treasury,
+          treasury,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
           systemProgram: PublicKey.default,
@@ -104,10 +105,10 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
       setAmount('');
       onSuccess?.();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Buy failed:', err);
       toast.error('Failed to buy fractions', {
-        description: err.message || 'Transaction failed',
+        description: err instanceof Error ? err.message : 'Transaction failed',
       });
     } finally {
       setLoading(false);
