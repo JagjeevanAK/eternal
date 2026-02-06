@@ -1,5 +1,6 @@
 import { NetworkSwitcher } from '@/components/NetworkSwitcher';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 
 const WalletMultiButton = dynamic(
   () => import('@solana/wallet-adapter-react-ui').then((mod) => mod.WalletMultiButton),
@@ -25,7 +26,21 @@ export const Dashboard = () => {
             </span>
             <NetworkSwitcher />
           </div>
-          <WalletMultiButton className="!bg-white !text-black hover:!bg-zinc-200 !rounded-lg !text-sm transition-colors" />
+          <div className="flex items-center space-x-3">
+            <Link href="/marketplace" className="px-4 py-2 text-sm text-zinc-300 hover:text-white transition-colors">
+              Marketplace
+            </Link>
+            <Link href="/register" className="px-4 py-2 text-sm text-zinc-300 hover:text-white transition-colors">
+              Register Asset
+            </Link>
+            <Link href="/portfolio" className="px-4 py-2 text-sm text-zinc-300 hover:text-white transition-colors">
+              Portfolio
+            </Link>
+            <Link href="/admin" className="px-4 py-2 text-sm text-zinc-300 hover:text-white transition-colors">
+              Admin
+            </Link>
+            <WalletMultiButton className="!bg-white !text-black hover:!bg-zinc-200 !rounded-lg !text-sm transition-colors" />
+          </div>
         </div>
       </nav>
 

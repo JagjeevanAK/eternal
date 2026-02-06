@@ -16,7 +16,7 @@ export const Hero = () => {
           "group rounded-full border border-white/10 bg-neutral-900 text-sm text-white/70 transition-all ease-in hover:border-white/20"
         )}>
           <AnimatedShinyText className="inline-flex items-center justify-center px-3 py-0.5 transition ease-out">
-            <span>✨ Join the beta</span>
+            <span>✨ Tokenize Real-World Assets</span>
             <ArrowRightIcon className="ml-1 size-2.5 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
           </AnimatedShinyText>
         </div>
@@ -25,12 +25,18 @@ export const Hero = () => {
         </h1>
       </div>
       <p className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-        The next generation of digital asset inheritance.
+        Fractional ownership of real-world assets on Solana.
         <br />
-        Secure, automated, and decentralized on Solana.
+        Real estate, gold, art &mdash; tokenized and tradeable.
       </p>
-      <div className="inline-block">
+      <div className="flex items-center justify-center gap-4">
         <WalletMultiButton className="!bg-white !text-black hover:!bg-zinc-200 !px-8 !py-4 !rounded-lg !font-medium !text-base transition-colors" />
+        <a
+          href="/marketplace"
+          className="px-8 py-4 rounded-lg font-medium text-base border border-zinc-700 text-white hover:bg-zinc-900 transition-colors"
+        >
+          Browse Marketplace
+        </a>
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ const structuredData = {
   "name": "Eternal Key",
   "applicationCategory": "DeFi",
   "operatingSystem": "Web",
-  "description": "A decentralized dead man's switch for crypto inheritance on Solana, ensuring your digital assets reach your loved ones.",
+  "description": "Tokenize real-world assets on Solana. Fractional ownership of real estate, gold, art, and more with instant settlement.",
   "offers": {
     "@type": "Offer",
     "price": "0",
