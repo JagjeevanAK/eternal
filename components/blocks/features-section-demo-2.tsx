@@ -1,42 +1,32 @@
 import { cn } from "@/lib/utils";
 import {
-  IconTarget,
-  IconClock,
-  IconWallet,
+  IconBuilding,
+  IconCoin,
+  IconChartPie,
+  IconShieldCheck,
 } from "@tabler/icons-react";
-import Image from "next/image";
-
-const SolanaLogo = () => (
-  <Image
-    src="/solana-sol-logo.svg"
-    alt="Solana Logo"
-    width={32}
-    height={32}
-    className="text-blue-400"
-  />
-);
 
 export default function FeaturesSectionDemo() {
   const features = [
     {
-      title: "Security First",
-      description: "Built on Solana, the most secure blockchain",
-      icon: <SolanaLogo />,
+      title: "Real-World Assets",
+      description: "Tokenize real estate, gold, art, and more on-chain",
+      icon: <IconBuilding className="w-8 h-8" />,
     },
     {
-      title: "Full Control",
-      description: "Complete authority over your digital assets",
-      icon: <IconTarget />,
+      title: "Fractional Ownership",
+      description: "Buy and sell fractions of high-value assets instantly",
+      icon: <IconChartPie className="w-8 h-8" />,
     },
     {
-      title: "Flexible Timing",
-      description: "Set custom check-in periods that work for you",
-      icon: <IconClock />,
+      title: "Instant Settlement",
+      description: "Powered by Solana for sub-second transactions",
+      icon: <IconCoin className="w-8 h-8" />,
     },
     {
-      title: "Multi-Wallet Support",
-      description: "Connect and manage multiple beneficiary wallets",
-      icon: <IconWallet className="w-8 h-8" />,
+      title: "Verified Assets",
+      description: "Document verification ensures asset authenticity",
+      icon: <IconShieldCheck className="w-8 h-8" />,
     },
   ];
   return (

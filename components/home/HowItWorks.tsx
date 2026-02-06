@@ -37,19 +37,18 @@ export const HowItWorks = () => {
           How it works
         </p>
         <div className="text-neutral-200 mt-4 relative z-20">
-          Follow these steps to set up your inheritance:
+          Tokenize and trade real-world assets in 4 steps:
           <ul className="list-none mt-4 space-y-3">
             <Step title="Connect your Solana wallet" />
-            <Step title="Enter your beneficiary's wallet address" />
-            <Step title="Enter amount to pass" />
-            <Step title="Configure check-in period" />
-            <Step title="Create switch" />
-            <Step title="Wait for time to pass" />
-            <Step title="Withdraw from beneficiary's wallet!" />
+            <Step title="Register your real-world asset" />
+            <Step title="Get verified by platform authority" />
+            <Step title="Tokenize into fractional shares" />
+            <Step title="List on the marketplace" />
+            <Step title="Investors buy & sell fractions instantly" />
           </ul>
         </div>
         <p className="text-neutral-300 mt-6 relative z-20 text-sm">
-          You can cancel the switch anytime until the time is up.
+          Supports real estate, gold, art, vehicles, infrastructure, and more.
         </p>
       </CardSpotlight>
     </div>
