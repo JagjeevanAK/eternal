@@ -1,3 +1,5 @@
+export { };
+
 const ROOT_DIR = process.cwd();
 const PROGRAM_DIR = `${ROOT_DIR}/programs/asset-tokenization`;
 const LOCAL_RPC_URL = "http://127.0.0.1:8899";
@@ -225,7 +227,7 @@ try {
   const validatorExit =
     validator !== null
       ? validator.exited.then(() => "validator" as const)
-      : new Promise<"validator">(() => {});
+      : new Promise<"validator">(() => { });
   const apiExit = api.exited.then(() => "api" as const);
   const workerExit = worker.exited.then(() => "worker" as const);
   const webExit = web.exited.then(() => "web" as const);
@@ -235,7 +237,7 @@ try {
 
   if (winner === "validator") {
     throw new Error(
-      `Local validator exited unexpectedly (${validator.exitCode ?? validator.signalCode ?? "unknown"}).`,
+      `Local validator exited unexpectedly (${validator?.exitCode ?? validator?.signalCode ?? "unknown"}).`,
     );
   }
 
