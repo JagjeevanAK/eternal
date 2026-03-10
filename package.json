@@ -7,8 +7,11 @@
     "programs/*"
   ],
   "scripts": {
-    "dev": "cd apps/web && bun run dev",
-    "dev:local": "cd apps/web && NEXT_PUBLIC_SOLANA_CLUSTER=localnet NEXT_PUBLIC_SOLANA_RPC_URL=http://127.0.0.1:8899 bun run dev",
+    "dev": "bun run scripts/dev-setup.ts",
+    "dev:local": "bun run dev",
+    "dev:web": "cd apps/web && bun run dev",
+    "dev:web:local": "cd apps/web && NEXT_PUBLIC_SOLANA_CLUSTER=localnet NEXT_PUBLIC_SOLANA_RPC_URL=http://127.0.0.1:8899 bun run dev",
+    "demo:local": "bun run dev",
     "build": "cd apps/web && bun run build",
     "lint": "cd apps/web && bun run lint",
     "check": "cd apps/web && bun run check",

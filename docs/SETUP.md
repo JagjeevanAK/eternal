@@ -19,11 +19,14 @@ bun install
 ## Common Commands
 
 ```bash
-# Run the web app
-bun run dev
+# One-command local demo setup
+bun dev
+
+# Run only the web app on devnet
+bun run dev:web
 
 # Run the web app against localnet
-bun run dev:local
+bun run dev:web:local
 
 # Build the web app
 bun run build
@@ -63,7 +66,7 @@ solana airdrop 2
 
 The program test suite runs on localnet by default. During `anchor test`, the local validator clones the Metaplex token-metadata program from devnet so the tokenization instruction can execute locally.
 
-For a wallet-connected localhost demo, start the local validator from `programs/asset-tokenization`, run `bun run init:local`, then start the web app with `bun run dev:local`.
+For a wallet-connected localhost demo, the fastest path is `bun dev`.
 
 ## Troubleshooting
 

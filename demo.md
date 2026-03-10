@@ -41,6 +41,24 @@ bun run test:program
 
 ## Local Demo Sequence
 
+### One command
+
+From the repo root:
+
+```bash
+bun dev
+```
+
+That command:
+
+- builds the Anchor program
+- starts the local validator
+- waits for the RPC endpoint
+- initializes the platform config
+- starts the web UI on `http://localhost:3000`
+
+If you already know you want the manual breakdown, use the steps below.
+
 ### Terminal 1: Build the program
 
 ```bash
@@ -87,7 +105,7 @@ solana airdrop 20 <WALLET_C_PUBKEY> --url http://127.0.0.1:8899
 From the repo root:
 
 ```bash
-bun run dev:local
+bun run dev:web:local
 ```
 
 Open `http://localhost:3000`.
@@ -161,7 +179,7 @@ ANCHOR_WALLET=~/.config/solana/id.json bun run init:devnet
 ### Start the web app in default devnet mode
 
 ```bash
-bun run dev
+bun run dev:web
 ```
 
 ### Notes for devnet mode

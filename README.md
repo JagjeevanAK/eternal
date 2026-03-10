@@ -23,11 +23,16 @@ eternal/
 # Install workspace dependencies
 bun install
 
-# Start the web app
+# One-command local demo setup
+bun dev
+# or
 bun run dev
 
+# Start only the web app on devnet
+bun run dev:web
+
 # Start the web app against localnet
-bun run dev:local
+bun run dev:web:local
 
 # Build the web app
 bun run build
