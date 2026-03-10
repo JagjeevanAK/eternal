@@ -23,18 +23,18 @@ export const metadata: Metadata = {
     template: "%s | Eternal",
   },
   description:
-    "Tokenize real-world assets on Solana with fractional ownership, verification, and on-chain transfers.",
+    "A local-first tokenized asset marketplace for company-share and real-estate issues with browsing, issuance, and fixed-price trading flows.",
   keywords: [
     "asset tokenization",
-    "real-world assets",
-    "fractional ownership",
+    "company shares",
+    "real estate investing",
     "Solana",
-    "RWA",
+    "fixed price marketplace",
   ],
   openGraph: {
     title: "Eternal",
     description:
-      "A Solana app for registering, verifying, tokenizing, and trading real-world assets.",
+      "A local-first tokenized asset marketplace for company-share and real-estate issues with browsing, issuance, and fixed-price trading flows.",
     siteName: "Eternal",
     locale: "en_US",
     type: "website",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Eternal",
     description:
-      "A Solana app for registering, verifying, tokenizing, and trading real-world assets.",
+      "A local-first tokenized asset marketplace for company-share and real-estate issues with browsing, issuance, and fixed-price trading flows.",
   },
   icons: {
     icon: [

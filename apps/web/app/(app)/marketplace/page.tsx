@@ -1,5 +1,5 @@
-import { MarketplacePage } from '@/features/assets/components/MarketplacePage';
+import { PropertiesScreen } from "@/features/product/components/PropertiesScreen";
 
 export default function MarketplaceRoute() {
-  return <MarketplacePage />;
+  return <PropertiesScreen />;
 }

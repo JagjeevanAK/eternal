@@ -5,6 +5,9 @@ import { useCallback, useRef, useSyncExternalStore } from 'react';
 import { cn } from '@/lib/utils';
 
 const emptySubscribe = () => () => {};
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (update: () => void) => void;
+};
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { setTheme, resolvedTheme } = useTheme();
@@ -24,13 +27,15 @@ export function ThemeToggle({ className }: { className?: string }) {
         typeof document !== 'undefined' &&
         'startViewTransition' in document
       ) {
+        const viewTransitionDocument = document as ViewTransitionDocument;
+
         // Set ripple origin as CSS custom properties
         document.documentElement.style.setProperty('--ripple-x', `${x}px`);
         document.documentElement.style.setProperty('--ripple-y', `${y}px`);
 
         // Use the View Transition API — it captures snapshots of old/new states
         // so actual page content stays visible during the ripple
-        (document as any).startViewTransition(() => {
+        viewTransitionDocument.startViewTransition?.(() => {
           setTheme(nextTheme);
         });
       } else {

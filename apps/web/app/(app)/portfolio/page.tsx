@@ -1,5 +1,5 @@
-import PortfolioContent from '@/features/assets/components/PortfolioContent';
+import { PortfolioScreen } from '@/features/product/components/PortfolioScreen';
 
 export default function PortfolioPage() {
-  return <PortfolioContent />;
+  return <PortfolioScreen />;
 }
