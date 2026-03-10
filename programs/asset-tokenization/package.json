@@ -1,0 +1,27 @@
+{
+  "name": "@eternal/asset-program",
+  "version": "0.1.0",
+  "description": "Solana smart contract for real-world asset tokenization",
+  "scripts": {
+    "build": "anchor build",
+    "localnet": "solana-test-validator --reset --bind-address 127.0.0.1 --url https://api.devnet.solana.com --clone-upgradeable-program metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s --bpf-program EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ target/deploy/asset_tokenization.so",
+    "init:local": "ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 bun run scripts/init-platform.ts",
+    "init:devnet": "ANCHOR_PROVIDER_URL=https://api.devnet.solana.com bun run scripts/init-platform.ts",
+    "test": "anchor test",
+    "test:skip": "anchor test --skip-local-validator",
+    "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/web3.js": "^1.98.0",
+    "@solana/spl-token": "^0.4.13"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/bn.js": "^5.2.0",
+    "chai": "^5.1.2",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
+  }
+}
