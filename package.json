@@ -9,8 +9,11 @@
   "scripts": {
     "dev": "bun run scripts/dev-setup.ts",
     "dev:local": "bun run dev",
-    "dev:web": "cd apps/web && bun run dev",
-    "dev:web:local": "cd apps/web && NEXT_PUBLIC_SOLANA_CLUSTER=localnet NEXT_PUBLIC_SOLANA_RPC_URL=http://127.0.0.1:8899 bun run dev",
+    "dev:api": "cd apps/api && bun run dev",
+    "dev:worker": "cd apps/worker && bun run dev",
+    "dev:web": "cd apps/web && NEXT_PUBLIC_API_URL=http://127.0.0.1:4000 bun run dev",
+    "dev:web:local": "cd apps/web && NEXT_PUBLIC_API_URL=http://127.0.0.1:4000 NEXT_PUBLIC_SOLANA_CLUSTER=localnet NEXT_PUBLIC_SOLANA_RPC_URL=http://127.0.0.1:8899 bun run dev",
+    "seed:demo": "cd apps/api && ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 bun run seed",
     "demo:local": "bun run dev",
     "build": "cd apps/web && bun run build",
     "lint": "cd apps/web && bun run lint",

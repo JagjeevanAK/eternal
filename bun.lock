@@ -5,6 +5,14 @@
     "": {
       "name": "eternal",
     },
+    "apps/api": {
+      "name": "@eternal/api",
+      "version": "0.1.0",
+      "dependencies": {
+        "@coral-xyz/anchor": "^0.32.1",
+        "@solana/web3.js": "^1.98.0",
+      },
+    },
     "apps/web": {
       "name": "@eternal/web",
       "version": "0.1.0",
@@ -42,12 +50,19 @@
         "typescript": "^5",
       },
     },
+    "apps/worker": {
+      "name": "@eternal/worker",
+      "version": "0.1.0",
+      "dependencies": {
+        "@coral-xyz/anchor": "^0.32.1",
+        "@solana/web3.js": "^1.98.0",
+      },
+    },
     "programs/asset-tokenization": {
       "name": "@eternal/asset-program",
       "version": "0.1.0",
       "dependencies": {
         "@coral-xyz/anchor": "^0.32.1",
-        "@solana/spl-token": "^0.4.13",
         "@solana/web3.js": "^1.98.0",
       },
       "devDependencies": {
@@ -166,9 +181,13 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.4.1", "", { "dependencies": { "@eslint/core": "^0.17.0", "levn": "^0.4.1" } }, "sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA=="],
 
+    "@eternal/api": ["@eternal/api@workspace:apps/api"],
+
     "@eternal/asset-program": ["@eternal/asset-program@workspace:programs/asset-tokenization"],
 
     "@eternal/web": ["@eternal/web@workspace:apps/web"],
+
+    "@eternal/worker": ["@eternal/worker@workspace:apps/worker"],
 
     "@ethereumjs/common": ["@ethereumjs/common@10.1.1", "", { "dependencies": { "@ethereumjs/util": "^10.1.1", "eventemitter3": "^5.0.1" } }, "sha512-NefPzPlrJ9w+NWVe06P+sHZQU98E1AEU9vhiHJEVT2wEcNBC1YX6hON9+smrfbn86C4U1pb2zbvjhkF+n/LKBw=="],
 

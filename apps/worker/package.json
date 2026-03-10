@@ -1,0 +1,13 @@
+{
+  "name": "@eternal/worker",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/web3.js": "^1.98.0"
+  },
+  "scripts": {
+    "dev": "bun --watch src/worker.ts",
+    "start": "bun src/worker.ts"
+  }
+}

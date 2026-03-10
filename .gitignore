@@ -47,3 +47,4 @@ next-env.d.ts
 target
 **/*.rs.bk
 test-ledger
+.eternal-local
