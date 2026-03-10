@@ -1,273 +1,460 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { AssetTokenization } from "../target/types/asset_tokenization";
-import {
-  PublicKey,
-  Keypair,
-  LAMPORTS_PER_SOL,
-  SystemProgram,
-} from "@solana/web3.js";
-import {
-  getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
-import { describe, test, expect, beforeAll } from "bun:test";
-import crypto from "crypto";
+import { Keypair, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { beforeAll, describe, expect, test } from "bun:test";
 
-// For MPL Token Metadata Program
-const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
-  "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
-);
+const toLeBuffer = (value: number) => Buffer.from(new anchor.BN(value).toArray("le", 8));
+const enumKey = (value: Record<string, unknown>) => Object.keys(value)[0];
 
 describe("asset-tokenization", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace
-    .AssetTokenization as Program<AssetTokenization>;
-
-  // Test accounts
+  const program = anchor.workspace.AssetTokenization as Program<AssetTokenization>;
   const authority = provider.wallet;
-  const treasury = Keypair.generate();
-  const assetOwner = Keypair.generate();
-  const buyer = Keypair.generate();
 
-  // PDAs
+  const issuer = Keypair.generate();
+  const investorAlpha = Keypair.generate();
+  const investorBeta = Keypair.generate();
+  const externalWallet = Keypair.generate().publicKey;
+
+  const propertyCode = "WHITEFIELD-COMMONS";
+  const listingId = 1;
+  const tradeId = 1;
+  const distributionId = 1;
+
   let platformConfigPda: PublicKey;
-  let assetPda: PublicKey;
-  let ownershipPda: PublicKey;
-  let tokenMint: Keypair;
-
-  // Test data
-  const assetId = "LAND-MUM-001";
-  const assetType = 0; // RealEstate
-  const valuation = new anchor.BN(100 * LAMPORTS_PER_SOL); // 100 SOL
-  const totalFractions = new anchor.BN(1000); // 1000 fractions
-  const metadataUri = "https://arweave.net/asset-metadata";
-  const documentsUri = "https://arweave.net/documents";
-  const location = "Mumbai, Maharashtra, India";
-  const documentHash = crypto
-    .createHash("sha256")
-    .update("title_deed_content")
-    .digest();
+  let issuerProfilePda: PublicKey;
+  let investorAlphaRegistryPda: PublicKey;
+  let investorBetaRegistryPda: PublicKey;
+  let propertyPda: PublicKey;
+  let offeringPda: PublicKey;
+  let alphaHoldingPda: PublicKey;
+  let betaHoldingPda: PublicKey;
+  let listingPda: PublicKey;
+  let tradePda: PublicKey;
+  let distributionPda: PublicKey;
+  let alphaClaimPda: PublicKey;
+  let betaClaimPda: PublicKey;
 
   beforeAll(async () => {
     [platformConfigPda] = PublicKey.findProgramAddressSync(
       [Buffer.from("platform-config")],
       program.programId,
     );
-    [assetPda] = PublicKey.findProgramAddressSync(
+    [issuerProfilePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("issuer"), issuer.publicKey.toBuffer()],
+      program.programId,
+    );
+    [investorAlphaRegistryPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("investor"), investorAlpha.publicKey.toBuffer()],
+      program.programId,
+    );
+    [investorBetaRegistryPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("investor"), investorBeta.publicKey.toBuffer()],
+      program.programId,
+    );
+    [propertyPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("property"), issuer.publicKey.toBuffer(), Buffer.from(propertyCode)],
+      program.programId,
+    );
+    [offeringPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("offering"), propertyPda.toBuffer()],
+      program.programId,
+    );
+    [alphaHoldingPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("holding"), propertyPda.toBuffer(), investorAlpha.publicKey.toBuffer()],
+      program.programId,
+    );
+    [betaHoldingPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("holding"), propertyPda.toBuffer(), investorBeta.publicKey.toBuffer()],
+      program.programId,
+    );
+    [listingPda] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("asset"),
-        assetOwner.publicKey.toBuffer(),
-        Buffer.from(assetId),
+        Buffer.from("listing"),
+        propertyPda.toBuffer(),
+        investorAlpha.publicKey.toBuffer(),
+        toLeBuffer(listingId),
       ],
       program.programId,
     );
-    [ownershipPda] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("ownership"),
-        assetPda.toBuffer(),
-        buyer.publicKey.toBuffer(),
-      ],
+    [tradePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("trade"), listingPda.toBuffer(), toLeBuffer(tradeId)],
       program.programId,
     );
-    tokenMint = Keypair.generate();
+    [distributionPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("distribution"), propertyPda.toBuffer(), toLeBuffer(distributionId)],
+      program.programId,
+    );
+    [alphaClaimPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("claim"), distributionPda.toBuffer(), investorAlpha.publicKey.toBuffer()],
+      program.programId,
+    );
+    [betaClaimPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("claim"), distributionPda.toBuffer(), investorBeta.publicKey.toBuffer()],
+      program.programId,
+    );
 
-    const airdropTx1 = await provider.connection.requestAirdrop(
-      assetOwner.publicKey,
-      10 * LAMPORTS_PER_SOL,
-    );
-    await provider.connection.confirmTransaction(airdropTx1);
-    const airdropTx2 = await provider.connection.requestAirdrop(
-      buyer.publicKey,
-      10 * LAMPORTS_PER_SOL,
-    );
-    await provider.connection.confirmTransaction(airdropTx2);
+    for (const signer of [issuer, investorAlpha, investorBeta]) {
+      const signature = await provider.connection.requestAirdrop(
+        signer.publicKey,
+        5 * LAMPORTS_PER_SOL,
+      );
+      await provider.connection.confirmTransaction(signature);
+    }
   });
 
-  test("Initializes the platform", async () => {
-    const tx = await program.methods
-      .initializePlatform(new anchor.BN(0.1 * LAMPORTS_PER_SOL), 100, 50)
+  test("initializes the platform", async () => {
+    await program.methods
+      .initializePlatform(100, 50)
       .accountsStrict({
         authority: authority.publicKey,
         platformConfig: platformConfigPda,
-        treasury: treasury.publicKey,
+        treasury: authority.publicKey,
         systemProgram: SystemProgram.programId,
       })
       .rpc();
 
-    console.log("Platform initialized:", tx);
-    const config =
-      await program.account.platformConfig.fetch(platformConfigPda);
-    expect(config.authority.toString()).toBe(authority.publicKey.toString());
-    expect(config.treasury.toString()).toBe(treasury.publicKey.toString());
+    const config = await program.account.platformConfig.fetch(platformConfigPda);
+    expect(config.authority.toBase58()).toBe(authority.publicKey.toBase58());
+    expect(config.treasury.toBase58()).toBe(authority.publicKey.toBase58());
+    expect(config.primaryFeeBps).toBe(100);
+    expect(config.secondaryFeeBps).toBe(50);
   });
 
-  test("Registers a new asset", async () => {
-    const tx = await program.methods
-      .registerAsset(
-        assetId,
-        assetType,
-        valuation,
-        totalFractions,
-        metadataUri,
-        documentsUri,
-        location,
-        Array.from(documentHash) as number[],
-      )
+  test("registers and approves the issuer", async () => {
+    await program.methods
+      .registerIssuer("Eternal Issuer Labs", "Bengaluru")
       .accountsStrict({
-        owner: assetOwner.publicKey,
+        authority: issuer.publicKey,
         platformConfig: platformConfigPda,
-        asset: assetPda,
-        treasury: treasury.publicKey,
+        issuerProfile: issuerProfilePda,
         systemProgram: SystemProgram.programId,
       })
-      .signers([assetOwner])
+      .signers([issuer])
       .rpc();
 
-    console.log("Asset registered:", tx);
-    const asset = await program.account.asset.fetch(assetPda);
-    expect(asset.assetId).toBe(assetId);
-  });
-
-  test("Verifies the asset", async () => {
-    const tx = await program.methods
-      .verifyAsset()
+    await program.methods
+      .approveIssuer()
       .accountsStrict({
         authority: authority.publicKey,
         platformConfig: platformConfigPda,
-        asset: assetPda,
+        issuerProfile: issuerProfilePda,
       })
       .rpc();
 
-    console.log("Asset verified:", tx);
-    const asset = await program.account.asset.fetch(assetPda);
-    expect(asset.status).toEqual({ verified: {} });
+    const issuerProfile = await program.account.issuerProfile.fetch(issuerProfilePda);
+    expect(issuerProfile.displayName).toBe("Eternal Issuer Labs");
+    expect(issuerProfile.approved).toBe(true);
   });
 
-  test("Tokenizes the asset", async () => {
-    const assetTokenAccount = await getAssociatedTokenAddress(
-      tokenMint.publicKey,
-      assetPda,
-      true,
-    );
-    const [metadataAccount] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("metadata"),
-        TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-        tokenMint.publicKey.toBuffer(),
-      ],
-      TOKEN_METADATA_PROGRAM_ID,
-    );
+  test("registers investors, binds a wallet, and approves them", async () => {
+    await program.methods
+      .registerInvestor("Aarav Founder", "3456", investorAlpha.publicKey)
+      .accountsStrict({
+        authority: investorAlpha.publicKey,
+        platformConfig: platformConfigPda,
+        investorRegistry: investorAlphaRegistryPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([investorAlpha])
+      .rpc();
 
-    const tx = await program.methods
-      .tokenizeAsset(
-        "Mumbai Land Token",
-        "MLT",
-        "https://arweave.net/token-metadata",
+    await program.methods
+      .registerInvestor("Diya Operator", "4567", investorBeta.publicKey)
+      .accountsStrict({
+        authority: investorBeta.publicKey,
+        platformConfig: platformConfigPda,
+        investorRegistry: investorBetaRegistryPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([investorBeta])
+      .rpc();
+
+    await program.methods
+      .bindInvestorWallet(externalWallet)
+      .accountsStrict({
+        authority: investorAlpha.publicKey,
+        platformConfig: platformConfigPda,
+        investorRegistry: investorAlphaRegistryPda,
+      })
+      .signers([investorAlpha])
+      .rpc();
+
+    for (const registry of [investorAlphaRegistryPda, investorBetaRegistryPda]) {
+      await program.methods
+        .approveInvestor()
+        .accountsStrict({
+          authority: authority.publicKey,
+          platformConfig: platformConfigPda,
+          investorRegistry: registry,
+        })
+        .rpc();
+    }
+
+    const investorAlphaRegistry =
+      await program.account.investorRegistry.fetch(investorAlphaRegistryPda);
+    expect(investorAlphaRegistry.wallet.toBase58()).toBe(externalWallet.toBase58());
+    expect(enumKey(investorAlphaRegistry.kycStatus)).toBe("approved");
+  });
+
+  test("submits the property and offering", async () => {
+    await program.methods
+      .submitAsset(
+        propertyCode,
+        { realEstate: {} },
+        "Commercial building",
+        "WIC-UNIT-A",
+        "Whitefield Income Commons",
+        "Bengaluru",
+        "Karnataka",
+        "Eternal Whitefield SPV",
+        850,
+        1325,
+        48,
       )
       .accountsStrict({
-        owner: assetOwner.publicKey,
+        authority: issuer.publicKey,
         platformConfig: platformConfigPda,
-        asset: assetPda,
-        tokenMint: tokenMint.publicKey,
-        assetTokenAccount: assetTokenAccount,
-        metadataAccount: metadataAccount,
-        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        systemProgram: SystemProgram.programId,
-        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-      })
-      .signers([assetOwner, tokenMint])
-      .rpc();
-
-    console.log("Asset tokenized:", tx);
-    const asset = await program.account.asset.fetch(assetPda);
-    expect(asset.status).toEqual({ tokenized: {} });
-  });
-
-  test("Buys fractions", async () => {
-    const fractionsToBuy = new anchor.BN(10);
-    const assetTokenAccount = await getAssociatedTokenAddress(
-      tokenMint.publicKey,
-      assetPda,
-      true,
-    );
-    const buyerTokenAccount = await getAssociatedTokenAddress(
-      tokenMint.publicKey,
-      buyer.publicKey,
-    );
-
-    const tx = await program.methods
-      .buyFractions(fractionsToBuy)
-      .accountsStrict({
-        buyer: buyer.publicKey,
-        platformConfig: platformConfigPda,
-        asset: assetPda,
-        ownership: ownershipPda,
-        assetOwner: assetOwner.publicKey,
-        assetTokenAccount: assetTokenAccount,
-        buyerTokenAccount: buyerTokenAccount,
-        tokenMint: tokenMint.publicKey,
-        treasury: treasury.publicKey,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        issuerProfile: issuerProfilePda,
+        property: propertyPda,
         systemProgram: SystemProgram.programId,
       })
-      .signers([buyer])
+      .signers([issuer])
       .rpc();
 
-    console.log("Fractions purchased:", tx);
-    const ownership = await program.account.ownership.fetch(ownershipPda);
-    expect(ownership.fractionsOwned.toNumber()).toBe(fractionsToBuy.toNumber());
-  });
-
-  test("Adds a document", async () => {
-    const docType = "survey_report";
-    const docUri = "https://arweave.net/survey-document";
-    const docHash = crypto
-      .createHash("sha256")
-      .update("survey_content")
-      .digest();
-    const [documentPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("document"), assetPda.toBuffer(), Buffer.from(docType)],
-      program.programId,
-    );
-
-    const tx = await program.methods
-      .addDocument(docType, docUri, Array.from(docHash) as number[])
+    await program.methods
+      .createOffering(new anchor.BN(250_000), new anchor.BN(120_000), new anchor.BN(1_000))
       .accountsStrict({
-        owner: assetOwner.publicKey,
+        authority: issuer.publicKey,
         platformConfig: platformConfigPda,
-        asset: assetPda,
-        document: documentPda,
+        issuerProfile: issuerProfilePda,
+        property: propertyPda,
+        offering: offeringPda,
         systemProgram: SystemProgram.programId,
       })
-      .signers([assetOwner])
+      .signers([issuer])
       .rpc();
 
-    console.log("Document added:", tx);
-    const document = await program.account.document.fetch(documentPda);
-    expect(document.docType).toBe(docType);
+    const property = await program.account.propertyProject.fetch(propertyPda);
+    const offering = await program.account.offering.fetch(offeringPda);
+    expect(property.name).toBe("Whitefield Income Commons");
+    expect(enumKey(property.assetClass)).toBe("realEstate");
+    expect(property.assetType).toBe("Commercial building");
+    expect(property.symbol).toBe("WIC-UNIT-A");
+    expect(enumKey(property.status)).toBe("review");
+    expect(offering.totalUnits.toNumber()).toBe(1_000);
   });
 
-  test("Updates asset metadata", async () => {
-    const newValuation = new anchor.BN(150 * LAMPORTS_PER_SOL);
-    const tx = await program.methods
-      .updateAsset(newValuation, "https://arweave.net/updated-metadata", null)
+  test("approves and publishes the offering", async () => {
+    await program.methods
+      .approveAsset()
       .accountsStrict({
-        owner: assetOwner.publicKey,
+        authority: authority.publicKey,
         platformConfig: platformConfigPda,
-        asset: assetPda,
+        property: propertyPda,
       })
-      .signers([assetOwner])
       .rpc();
 
-    console.log("Asset updated:", tx);
-    const asset = await program.account.asset.fetch(assetPda);
-    expect(asset.valuation.toNumber()).toBe(newValuation.toNumber());
+    await program.methods
+      .publishOffering()
+      .accountsStrict({
+        authority: authority.publicKey,
+        platformConfig: platformConfigPda,
+        property: propertyPda,
+        offering: offeringPda,
+      })
+      .rpc();
+
+    const property = await program.account.propertyProject.fetch(propertyPda);
+    const offering = await program.account.offering.fetch(offeringPda);
+    expect(enumKey(property.status)).toBe("live");
+    expect(enumKey(offering.status)).toBe("live");
+  });
+
+  test("allocates a primary investment", async () => {
+    await program.methods
+      .allocatePrimary(new anchor.BN(200))
+      .accountsStrict({
+        authority: authority.publicKey,
+        platformConfig: platformConfigPda,
+        investor: investorAlpha.publicKey,
+        investorRegistry: investorAlphaRegistryPda,
+        property: propertyPda,
+        offering: offeringPda,
+        holding: alphaHoldingPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    const holding = await program.account.holdingPosition.fetch(alphaHoldingPda);
+    const offering = await program.account.offering.fetch(offeringPda);
+    const property = await program.account.propertyProject.fetch(propertyPda);
+    expect(holding.units.toNumber()).toBe(200);
+    expect(offering.remainingUnits.toNumber()).toBe(800);
+    expect(property.issuedUnits.toNumber()).toBe(200);
+  });
+
+  test("creates and fills a secondary listing", async () => {
+    await program.methods
+      .createListing(new anchor.BN(listingId), new anchor.BN(80), new anchor.BN(125_000))
+      .accountsStrict({
+        seller: investorAlpha.publicKey,
+        platformConfig: platformConfigPda,
+        sellerRegistry: investorAlphaRegistryPda,
+        property: propertyPda,
+        offering: offeringPda,
+        sellerHolding: alphaHoldingPda,
+        listing: listingPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([investorAlpha])
+      .rpc();
+
+    await program.methods
+      .fillListing(new anchor.BN(tradeId), new anchor.BN(30))
+      .accountsStrict({
+        authority: authority.publicKey,
+        platformConfig: platformConfigPda,
+        buyer: investorBeta.publicKey,
+        buyerRegistry: investorBetaRegistryPda,
+        seller: investorAlpha.publicKey,
+        sellerRegistry: investorAlphaRegistryPda,
+        property: propertyPda,
+        offering: offeringPda,
+        sellerHolding: alphaHoldingPda,
+        buyerHolding: betaHoldingPda,
+        listing: listingPda,
+        tradeRecord: tradePda,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    const listing = await program.account.secondaryListing.fetch(listingPda);
+    const sellerHolding = await program.account.holdingPosition.fetch(alphaHoldingPda);
+    const buyerHolding = await program.account.holdingPosition.fetch(betaHoldingPda);
+    const trade = await program.account.tradeRecord.fetch(tradePda);
+
+    expect(enumKey(listing.status)).toBe("partiallyFilled");
+    expect(listing.unitsRemaining.toNumber()).toBe(50);
+    expect(sellerHolding.units.toNumber()).toBe(170);
+    expect(sellerHolding.listedUnits.toNumber()).toBe(50);
+    expect(buyerHolding.units.toNumber()).toBe(30);
+    expect(trade.grossAmountInrMinor.toNumber()).toBe(3_750_000);
+  });
+
+  test("cancels the remaining listing inventory", async () => {
+    await program.methods
+      .cancelListing()
+      .accountsStrict({
+        seller: investorAlpha.publicKey,
+        platformConfig: platformConfigPda,
+        property: propertyPda,
+        sellerHolding: alphaHoldingPda,
+        listing: listingPda,
+      })
+      .signers([investorAlpha])
+      .rpc();
+
+    const listing = await program.account.secondaryListing.fetch(listingPda);
+    const sellerHolding = await program.account.holdingPosition.fetch(alphaHoldingPda);
+    expect(enumKey(listing.status)).toBe("cancelled");
+    expect(sellerHolding.listedUnits.toNumber()).toBe(0);
+  });
+
+  test("creates and claims a distribution", async () => {
+    const payableAt = Math.floor(Date.now() / 1000) + 1;
+
+    await program.methods
+      .createDistribution(
+        new anchor.BN(distributionId),
+        new anchor.BN(2_500),
+        new anchor.BN(payableAt),
+      )
+      .accountsStrict({
+        authority: authority.publicKey,
+        platformConfig: platformConfigPda,
+        property: propertyPda,
+        distribution: distributionPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+
+    await program.methods
+      .claimDistribution()
+      .accountsStrict({
+        investor: investorAlpha.publicKey,
+        platformConfig: platformConfigPda,
+        investorRegistry: investorAlphaRegistryPda,
+        property: propertyPda,
+        holding: alphaHoldingPda,
+        distribution: distributionPda,
+        claim: alphaClaimPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([investorAlpha])
+      .rpc();
+
+    await program.methods
+      .claimDistribution()
+      .accountsStrict({
+        investor: investorBeta.publicKey,
+        platformConfig: platformConfigPda,
+        investorRegistry: investorBetaRegistryPda,
+        property: propertyPda,
+        holding: betaHoldingPda,
+        distribution: distributionPda,
+        claim: betaClaimPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([investorBeta])
+      .rpc();
+
+    const alphaClaim = await program.account.distributionClaim.fetch(alphaClaimPda);
+    const betaClaim = await program.account.distributionClaim.fetch(betaClaimPda);
+    const distribution = await program.account.distribution.fetch(distributionPda);
+
+    expect(alphaClaim.amountInrMinor.toNumber()).toBe(425_000);
+    expect(betaClaim.amountInrMinor.toNumber()).toBe(75_000);
+    expect(distribution.totalClaimedInrMinor.toNumber()).toBe(500_000);
+    expect(enumKey(distribution.status)).toBe("paid");
+  });
+
+  test("blocks frozen investors from new primary allocations", async () => {
+    await program.methods
+      .setInvestorFrozen(true)
+      .accountsStrict({
+        authority: authority.publicKey,
+        platformConfig: platformConfigPda,
+        investorRegistry: investorBetaRegistryPda,
+      })
+      .rpc();
+
+    let error: unknown = null;
+
+    try {
+      await program.methods
+        .allocatePrimary(new anchor.BN(10))
+        .accountsStrict({
+          authority: authority.publicKey,
+          platformConfig: platformConfigPda,
+          investor: investorBeta.publicKey,
+          investorRegistry: investorBetaRegistryPda,
+          property: propertyPda,
+          offering: offeringPda,
+          holding: betaHoldingPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .rpc();
+    } catch (value) {
+      error = value;
+    }
+
+    expect(error).not.toBeNull();
+    expect(String(error)).toContain("InvestorFrozen");
   });
 });

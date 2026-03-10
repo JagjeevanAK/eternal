@@ -1,14 +1,8 @@
 import { existsSync, readFileSync } from "fs";
 import { homedir } from "os";
 import path from "path";
-import { AnchorProvider, BN, Program, Wallet } from "@coral-xyz/anchor";
-import {
-  Connection,
-  Keypair,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  SystemProgram,
-} from "@solana/web3.js";
+import { AnchorProvider, Program, Wallet } from "@coral-xyz/anchor";
+import { Connection, Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 import idl from "../target/idl/asset_tokenization.json";
 import type { AssetTokenization } from "../target/types/asset_tokenization";
 
@@ -42,17 +36,11 @@ const connection = new Connection(
 const provider = new AnchorProvider(connection, new Wallet(authority), {
   commitment: "confirmed",
 });
-const program = new Program<AssetTokenization>(
-  idl as AssetTokenization,
-  provider,
-);
+const program = new Program<AssetTokenization>(idl as AssetTokenization, provider);
 
-const registrationFeeSol = Number(process.env.REGISTRATION_FEE_SOL ?? "0.1");
-const mintingFeeBps = Number(process.env.MINTING_FEE_BPS ?? "100");
-const tradingFeeBps = Number(process.env.TRADING_FEE_BPS ?? "50");
-const treasury = new PublicKey(
-  process.env.TREASURY ?? authority.publicKey.toBase58(),
-);
+const primaryFeeBps = Number(process.env.PRIMARY_FEE_BPS ?? "100");
+const secondaryFeeBps = Number(process.env.SECONDARY_FEE_BPS ?? "50");
+const treasury = new PublicKey(process.env.TREASURY ?? authority.publicKey.toBase58());
 
 const [platformConfig] = PublicKey.findProgramAddressSync(
   [Buffer.from("platform-config")],
@@ -60,27 +48,23 @@ const [platformConfig] = PublicKey.findProgramAddressSync(
 );
 
 try {
-  const existingConfig =
-    await program.account.platformConfig.fetch(platformConfig);
+  const existingConfig = await program.account.platformConfig.fetch(platformConfig);
 
   console.log("Platform already initialized.");
   console.log(`Program ID: ${program.programId.toBase58()}`);
   console.log(`Platform Config: ${platformConfig.toBase58()}`);
-  console.log(
-    `Authority: ${new PublicKey(existingConfig.authority).toBase58()}`,
-  );
+  console.log(`Authority: ${new PublicKey(existingConfig.authority).toBase58()}`);
   console.log(`Treasury: ${new PublicKey(existingConfig.treasury).toBase58()}`);
+  console.log(
+    `Settlement Authority: ${new PublicKey(existingConfig.settlementAuthority).toBase58()}`,
+  );
   process.exit(0);
 } catch {
   // Continue with initialization when the PDA is missing.
 }
 
 const signature = await program.methods
-  .initializePlatform(
-    new BN(Math.round(registrationFeeSol * LAMPORTS_PER_SOL)),
-    mintingFeeBps,
-    tradingFeeBps,
-  )
+  .initializePlatform(primaryFeeBps, secondaryFeeBps)
   .accounts({
     authority: authority.publicKey,
     platformConfig,

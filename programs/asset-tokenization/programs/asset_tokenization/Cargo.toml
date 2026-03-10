@@ -1,7 +1,7 @@
 [package]
 name = "asset-tokenization"
 version = "0.1.0"
-description = "Solana program for tokenizing real-world assets"
+description = "Solana program for local-first property offerings and compliant settlement"
 edition = "2021"
 
 [lib]
@@ -14,8 +14,7 @@ cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
-idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = { version = "0.32.1", features = ["init-if-needed"] }
-anchor-spl = { version = "0.32.1", features = ["metadata"] }

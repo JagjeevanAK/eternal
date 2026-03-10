@@ -1,203 +1,102 @@
 # Eternal Asset Program
 
-A Solana program for tokenizing real-world assets like land, real estate, gold, and infrastructure. This enables fractional ownership and instant transfers of traditionally illiquid assets.
+This package contains the Solana Anchor program for Eternal's local-first asset marketplace flow across company-share and real-estate issues.
 
-## Problem Statement
+The contract no longer uses the older SOL-denominated demo flow. It now mirrors the product lifecycle used by the local app:
 
-In India, most wealth is locked in real estate, gold, and infrastructure, but ownership transfer is slow, costly, and bureaucratic:
-- Selling land can take months involving brokers, lawyers, stamp duty offices, and physical registry visits
-- Even gifting property to family is a legal nightmare
-- While UPI proved that ₹50 can be sent in one second, ₹50 crore worth of assets still move like it's 1995
+- issuer registration and approval
+- investor registry, wallet binding, allowlisting, and freeze controls
+- asset submission and offering publication
+- primary allocation after off-chain payment confirmation
+- secondary listing creation, fills, and cancellation
+- distribution creation and investor claims
 
-**We're bringing UPI-like instant transfers to real-world assets.**
+## Contract Lifecycle
 
-## Features
-
-### Asset Management
-- **Register Assets**: Tokenize real estate, gold, infrastructure, vehicles, art, and more
-- **Document Verification**: Platform authority verifies legal documents
-- **Fractionalization**: Divide assets into tradeable token fractions
-
-### Trading
-- **Buy Fractions**: Purchase fractional ownership with instant settlement
-- **Sell Fractions**: Liquidate your ownership stake
-- **Transfer Ownership**: Send fractions to anyone instantly (like UPI for assets)
-
-### Compliance
-- **Document Storage**: Store and verify SHA256 hashes of legal documents
-- **Platform Governance**: Authority-controlled verification and fee management
-
-## Asset Types Supported
-
-| Type | Code | Description |
-|------|------|-------------|
-| Real Estate | 0 | Land, buildings, apartments |
-| Gold | 1 | Gold bars, coins |
-| Infrastructure | 2 | Roads, bridges, power plants |
-| Vehicle | 3 | Cars, trucks, machinery |
-| Art | 4 | Paintings, sculptures |
-| Commodity | 5 | Other commodities |
-| Other | 6 | Any other assets |
-
-## Asset Lifecycle
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   REGISTER  │ ──► │   VERIFY    │ ──► │  TOKENIZE   │ ──► │    TRADE    │
-│   (Owner)   │     │ (Authority) │     │   (Owner)   │     │  (Anyone)   │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-     │                   │                    │                    │
-     ▼                   ▼                    ▼                    ▼
-  Pending            Verified            Tokenized          Buy/Sell/Transfer
+```text
+register issuer -> approve issuer
+register investor -> approve investor
+submit asset -> create offering -> approve asset -> publish offering
+allocate primary units
+create listing -> fill listing -> cancel remainder if needed
+create distribution -> claim distribution
 ```
 
-## Instructions
+## Main Instructions
 
-### Platform Setup
+### Platform
 
-```rust
-// Initialize platform (once by admin)
-initialize_platform(
-    registration_fee: Option<u64>,  // Fee to register assets
-    minting_fee_bps: Option<u16>,   // Minting fee in basis points
-    trading_fee_bps: Option<u16>,   // Trading fee in basis points
-)
-```
+- `initialize_platform(primary_fee_bps, secondary_fee_bps)`
+- `set_platform_pause(paused)`
 
-### Asset Owner Instructions
+### Issuers
 
-```rust
-// Register a new asset
-register_asset(
-    asset_id: String,           // Unique identifier
-    asset_type: u8,             // 0=RealEstate, 1=Gold, etc.
-    valuation: u64,             // Total value in lamports
-    total_fractions: u64,       // Number of fractions
-    metadata_uri: String,       // IPFS/Arweave metadata URI
-    documents_uri: String,      // IPFS/Arweave documents URI
-    location: String,           // Physical location
-    document_hash: [u8; 32],    // SHA256 of primary document
-)
+- `register_issuer(display_name, city)`
+- `approve_issuer()`
 
-// Tokenize after verification
-tokenize_asset(
-    name: String,   // Token name
-    symbol: String, // Token symbol
-    uri: String,    // Token metadata URI
-)
+### Investors
 
-// Add additional documents
-add_document(
-    doc_type: String,   // e.g., "title_deed", "survey"
-    uri: String,        // Document URI
-    hash: [u8; 32],     // Document SHA256 hash
-)
+- `register_investor(legal_name, pan_last4, wallet)`
+- `bind_investor_wallet(wallet)`
+- `approve_investor()`
+- `set_investor_frozen(frozen)`
 
-// Update asset metadata
-update_asset(
-    new_valuation: Option<u64>,
-    new_metadata_uri: Option<String>,
-    new_documents_uri: Option<String>,
-)
-```
+### Assets and Offerings
 
-### Trading Instructions
+- `submit_asset(code, asset_class, asset_type, symbol, name, city, state_name, structure_name, target_yield_bps, target_irr_bps, expected_exit_months)`
+- `create_offering(minimum_investment_inr_minor, unit_price_inr_minor, total_units)`
+- `approve_asset()`
+- `publish_offering()`
+- `close_offering()`
 
-```rust
-// Buy fractions of an asset
-buy_fractions(fractions_to_buy: u64)
+### Settlement
 
-// Sell fractions back
-sell_fractions(fractions_to_sell: u64)
+- `allocate_primary(units)`
+- `create_listing(listing_id, units, price_per_unit_inr_minor)`
+- `fill_listing(trade_id, units)`
+- `cancel_listing()`
+- `create_distribution(distribution_id, amount_per_unit_inr_minor, payable_at)`
+- `claim_distribution()`
 
-// Transfer fractions to another user (instant!)
-transfer_ownership(fractions_to_transfer: u64)
-```
+## Main Accounts
 
-### Authority Instructions
+- `PlatformConfig`: authority, treasury, settlement authority, fees, counters, volume totals, pause flag
+- `IssuerProfile`: issuer identity, approval state, suspension state, property count
+- `InvestorRegistry`: investor identity, PAN suffix, wallet binding, KYC status, allowlist state, freeze state
+- `PropertyProject`: asset class, asset type, symbol, structure, yield targets, lifecycle state, linked offering
+- `Offering`: price, minimum investment, remaining units, publication state
+- `HoldingPosition`: units owned, listed units, average price, invested amount
+- `SecondaryListing`: seller escrow record for secondary inventory
+- `TradeRecord`: settlement record for each filled listing trade
+- `Distribution`: announced per-unit payout and aggregate claim totals
+- `DistributionClaim`: per-investor claim receipt
 
-```rust
-// Verify an asset's documents
-verify_asset()
-```
-
-## Account Structures
-
-### PlatformConfig
-- authority: Platform admin
-- treasury: Fee collection wallet
-- registration_fee: Asset registration fee
-- minting_fee_bps / trading_fee_bps: Fee percentages
-- min/max_fractions: Fraction limits
-- total_assets / total_volume: Platform stats
-
-### Asset
-- owner: Asset owner pubkey
-- asset_type / status: Asset classification
-- token_mint: SPL token for fractions
-- valuation / total_fractions / price_per_fraction
-- metadata_uri / documents_uri / document_hash
-- location / created_at / updated_at
-
-### Ownership
-- asset: Asset pubkey
-- owner: Owner pubkey
-- fractions_owned: Number of fractions held
-
-### Document
-- asset: Asset pubkey
-- doc_type / uri / hash
-- verified / verifier / verified_at
-
-## Building & Testing
+## Local Commands
 
 ```bash
-# Build
 cd programs/asset-tokenization
-anchor build
 
-# Start a local validator for browser demos
+# Build the program and IDL
+bun run build
+
+# Start a browser/demo validator manually
 bun run localnet
 
-# Initialize the platform account on localnet or devnet
+# Initialize the platform PDA on localnet
 bun run init:local
-bun run init:devnet
 
-# Test against a local validator
-anchor test
+# Run the contract test suite with an ephemeral validator
+bun run test
 
-# Deploy to devnet
-anchor deploy --provider.cluster devnet
+# Run the raw Anchor CLI path if you specifically need it
+bun run test:anchor
 ```
 
-`anchor test` runs on localnet by default and clones the Metaplex token-metadata program from devnet so tokenization flows can execute without spending from a funded devnet wallet.
-
-## Configuration
-
-Default values in `state/config.rs`:
-- Registration fee: 0.1 SOL
-- Minting fee: 1% (100 bps)
-- Trading fee: 0.5% (50 bps)
-- Min valuation: 1 SOL
-- Min fractions: 100
-- Max fractions: 1 billion
-
-## Security Considerations
-
-1. **init-if-needed**: Used carefully for ATA creation; ownership accounts are seeded by asset + owner
-2. **Authority controls**: Document verification requires platform authority signature
-3. **Status checks**: Assets must follow proper lifecycle (Pending → Verified → Tokenized)
-4. **Overflow protection**: All arithmetic uses checked operations
+`bun run test` is the recommended path. It builds the program, starts a temporary local validator, runs the Bun integration test file, and shuts the validator down automatically.
 
 ## Program ID
 
-- Devnet: `EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ`
-
-> **Note**: For production deployment, generate a new keypair and update all references:
-> ```bash
-> solana-keygen new -o target/deploy/asset_tokenization-keypair.json
-> anchor keys sync
-> ```
+- localnet/devnet: `EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ`
 
 ## License
 

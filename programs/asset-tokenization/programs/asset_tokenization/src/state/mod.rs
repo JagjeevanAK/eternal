@@ -1,5 +1,5 @@
-pub mod asset;
 pub mod config;
+pub mod product;
 
-pub use asset::*;
 pub use config::*;
+pub use product::*;
