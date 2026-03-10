@@ -98,18 +98,18 @@ export const AssetDetails: React.FC<AssetDetailsProps> = ({
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         <IconArrowLeft className="w-4 h-4" />
         Back to assets
       </button>
 
       {/* Header */}
-      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-white">{asset.assetId}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{asset.assetId}</h1>
               <span
                 className={cn(
                   'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border',
@@ -119,7 +119,7 @@ export const AssetDetails: React.FC<AssetDetailsProps> = ({
                 {getAssetStatusName(statusNum)}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-zinc-400 text-sm">
+            <div className="flex items-center gap-4 text-muted-foreground text-sm">
               <span className="flex items-center gap-1">
                 <IconShield className="w-4 h-4" />
                 {getAssetTypeName(typeNum)}
@@ -137,8 +137,8 @@ export const AssetDetails: React.FC<AssetDetailsProps> = ({
             </div>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-bold text-white">{formatLamports(asset.valuation)}</p>
-            <p className="text-sm text-zinc-400">Total Valuation</p>
+            <p className="text-3xl font-bold text-foreground">{formatLamports(asset.valuation)}</p>
+            <p className="text-sm text-muted-foreground">Total Valuation</p>
           </div>
         </div>
       </div>
@@ -147,91 +147,91 @@ export const AssetDetails: React.FC<AssetDetailsProps> = ({
         {/* Left: Details */}
         <div className="lg:col-span-2 space-y-6">
           {/* Fraction Stats */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <IconChartPie className="w-5 h-5 text-blue-400" />
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <IconChartPie className="w-5 h-5 text-primary" />
               Fraction Details
             </h3>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-500">Total</p>
-                <p className="text-lg font-bold text-white">{asset.totalFractions.toString()}</p>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-lg font-bold text-foreground">{asset.totalFractions.toString()}</p>
               </div>
-              <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-500">Available</p>
-                <p className="text-lg font-bold text-green-400">{asset.availableFractions.toString()}</p>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Available</p>
+                <p className="text-lg font-bold text-chart-1">{asset.availableFractions.toString()}</p>
               </div>
-              <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-500">Sold</p>
-                <p className="text-lg font-bold text-blue-400">{soldFractions.toString()}</p>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Sold</p>
+                <p className="text-lg font-bold text-primary">{soldFractions.toString()}</p>
               </div>
-              <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-500">Price/Fraction</p>
-                <p className="text-lg font-bold text-white">{formatLamports(asset.pricePerFraction)}</p>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Price/Fraction</p>
+                <p className="text-lg font-bold text-foreground">{formatLamports(asset.pricePerFraction)}</p>
               </div>
             </div>
 
             {/* Progress bar */}
             <div className="space-y-2">
-              <div className="w-full bg-zinc-800 rounded-full h-3">
+              <div className="w-full bg-muted rounded-full h-3">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all"
+                  className="bg-linear-to-r from-primary to-ring h-3 rounded-full transition-all"
                   style={{ width: `${Math.min(soldPercentage, 100)}%` }}
                 />
               </div>
-              <p className="text-sm text-zinc-400">{soldPercentage}% sold</p>
+              <p className="text-sm text-muted-foreground">{soldPercentage}% sold</p>
             </div>
           </div>
 
           {/* Metadata */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 space-y-3">
-            <h3 className="text-lg font-semibold text-white mb-4">Asset Information</h3>
+          <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Asset Information</h3>
 
             <div className="space-y-3">
-              <div className="flex justify-between py-2 border-b border-zinc-800">
-                <span className="text-sm text-zinc-400">Owner</span>
-                <span className="text-sm text-white font-mono">
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Owner</span>
+                <span className="text-sm text-foreground font-mono">
                   {asset.owner.toBase58().slice(0, 8)}...{asset.owner.toBase58().slice(-4)}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b border-zinc-800">
-                <span className="text-sm text-zinc-400">Token Mint</span>
-                <span className="text-sm text-white font-mono">
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Token Mint</span>
+                <span className="text-sm text-foreground font-mono">
                   {asset.tokenMint.toBase58() === '11111111111111111111111111111111'
                     ? 'Not yet minted'
                     : `${asset.tokenMint.toBase58().slice(0, 8)}...${asset.tokenMint.toBase58().slice(-4)}`}
                 </span>
               </div>
               {asset.metadataUri && (
-                <div className="flex justify-between py-2 border-b border-zinc-800">
-                  <span className="text-sm text-zinc-400">Metadata</span>
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-sm text-muted-foreground">Metadata</span>
                   <a
                     href={asset.metadataUri}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-400 hover:underline flex items-center gap-1"
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
                   >
                     View <IconExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               )}
               {asset.documentsUri && (
-                <div className="flex justify-between py-2 border-b border-zinc-800">
-                  <span className="text-sm text-zinc-400">Documents</span>
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-sm text-muted-foreground">Documents</span>
                   <a
                     href={asset.documentsUri}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-400 hover:underline flex items-center gap-1"
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
                   >
                     View <IconExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               )}
               <div className="flex justify-between py-2">
-                <span className="text-sm text-zinc-400">Document Hash</span>
-                <span className="text-sm text-zinc-300 font-mono">
+                <span className="text-sm text-muted-foreground">Document Hash</span>
+                <span className="text-sm text-muted-foreground font-mono">
                   {asset.documentHash.slice(0, 8).map((b) => b.toString(16).padStart(2, '0')).join('')}...
                 </span>
               </div>
@@ -242,20 +242,20 @@ export const AssetDetails: React.FC<AssetDetailsProps> = ({
         {/* Right: Actions */}
         <div className="space-y-6">
           {/* Your Ownership */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-            <h3 className="text-sm font-semibold text-zinc-400 mb-3">Your Position</h3>
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Your Position</h3>
             {loadingOwnership ? (
-              <IconLoader2 className="w-5 h-5 animate-spin text-zinc-400" />
+              <IconLoader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             ) : userOwnership && userOwnership.gt(new BN(0)) ? (
               <div className="space-y-2">
-                <p className="text-2xl font-bold text-white">{userOwnership.toString()}</p>
-                <p className="text-sm text-zinc-400">fractions owned</p>
-                <p className="text-sm text-green-400">
+                <p className="text-2xl font-bold text-foreground">{userOwnership.toString()}</p>
+                <p className="text-sm text-muted-foreground">fractions owned</p>
+                <p className="text-sm text-chart-1">
                   ≈ {formatLamports(userOwnership.mul(asset.pricePerFraction))}
                 </p>
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">You don&apos;t own any fractions yet</p>
+              <p className="text-sm text-muted-foreground">You don&apos;t own any fractions yet</p>
             )}
           </div>
 
@@ -264,7 +264,7 @@ export const AssetDetails: React.FC<AssetDetailsProps> = ({
             {statusNum === AssetStatus.Tokenized && asset.availableFractions.gt(new BN(0)) && (
               <button
                 onClick={onBuy}
-                className="w-full py-3 bg-green-600 text-white rounded-lg font-medium text-sm hover:bg-green-700 transition-colors"
+                className="w-full py-3 bg-chart-1 text-primary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors"
               >
                 Buy Fractions
               </button>
@@ -273,7 +273,7 @@ export const AssetDetails: React.FC<AssetDetailsProps> = ({
             {userOwnership && userOwnership.gt(new BN(0)) && onSell && (
               <button
                 onClick={onSell}
-                className="w-full py-3 bg-orange-600 text-white rounded-lg font-medium text-sm hover:bg-orange-700 transition-colors"
+                className="w-full py-3 bg-destructive text-destructive-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors"
               >
                 Sell Fractions
               </button>

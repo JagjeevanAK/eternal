@@ -67,16 +67,16 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onBuy, onDetails })
 
   return (
     <div
-      className="group relative bg-zinc-900/50 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all duration-300 overflow-hidden cursor-pointer"
+      className="group relative bg-card rounded-xl border border-border hover:border-ring/40 transition-all duration-300 overflow-hidden cursor-pointer"
       onClick={onDetails}
     >
       {/* Type gradient header */}
-      <div className="h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+      <div className="h-2 bg-linear-to-r from-primary via-secondary to-ring" />
 
       <div className="p-5 space-y-4">
         {/* Header: Type + Status */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-zinc-400">
+          <div className="flex items-center gap-2 text-muted-foreground">
             {assetTypeIcons[typeNum]}
             <span className="text-sm font-medium">{getAssetTypeName(typeNum)}</span>
           </div>
@@ -93,9 +93,9 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onBuy, onDetails })
 
         {/* Asset ID / Title */}
         <div>
-          <h3 className="text-lg font-semibold text-white truncate">{asset.assetId}</h3>
+          <h3 className="text-lg font-semibold text-foreground truncate">{asset.assetId}</h3>
           {asset.location && (
-            <div className="flex items-center gap-1 mt-1 text-sm text-zinc-500">
+            <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
               <IconMapPin className="w-3.5 h-3.5" />
               <span className="truncate">{asset.location}</span>
             </div>
@@ -103,35 +103,35 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onBuy, onDetails })
         </div>
 
         {/* Valuation */}
-        <div className="bg-zinc-800/50 rounded-lg p-3 space-y-2">
+        <div className="bg-muted rounded-lg p-3 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Valuation</span>
-            <span className="text-white font-medium">{formatLamports(asset.valuation)}</span>
+            <span className="text-muted-foreground">Valuation</span>
+            <span className="text-foreground font-medium">{formatLamports(asset.valuation)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Price/Fraction</span>
-            <span className="text-white font-medium">{formatLamports(asset.pricePerFraction)}</span>
+            <span className="text-muted-foreground">Price/Fraction</span>
+            <span className="text-foreground font-medium">{formatLamports(asset.pricePerFraction)}</span>
           </div>
         </div>
 
         {/* Fraction progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400 flex items-center gap-1">
+            <span className="text-muted-foreground flex items-center gap-1">
               <IconChartPie className="w-3.5 h-3.5" />
               Fractions Sold
             </span>
-            <span className="text-zinc-300">
+            <span className="text-foreground/80">
               {soldFractions.toString()}/{asset.totalFractions.toString()}
             </span>
           </div>
-          <div className="w-full bg-zinc-800 rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+              className="bg-linear-to-r from-primary to-ring h-2 rounded-full transition-all duration-500"
               style={{ width: `${Math.min(soldPercentage, 100)}%` }}
             />
           </div>
-          <p className="text-xs text-zinc-500 text-right">{soldPercentage}% sold</p>
+          <p className="text-xs text-muted-foreground text-right">{soldPercentage}% sold</p>
         </div>
 
         {/* Actions */}
@@ -141,7 +141,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onBuy, onDetails })
               e.stopPropagation();
               onBuy?.();
             }}
-            className="w-full py-2.5 bg-white text-black rounded-lg font-medium text-sm hover:bg-zinc-200 transition-colors"
+            className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors"
           >
             Buy Fractions
           </button>

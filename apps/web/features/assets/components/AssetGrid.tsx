@@ -79,7 +79,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
         <IconLoader2 className="w-8 h-8 animate-spin mb-4" />
         <p className="text-sm">Loading assets...</p>
       </div>
@@ -99,7 +99,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
       {showFilters && <AssetFilters filters={filters} onChange={setFilters} />}
 
       {filteredAssets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <IconMoodEmpty className="w-12 h-12 mb-4" />
           <p className="text-lg font-medium">No assets found</p>
           <p className="text-sm mt-1">
@@ -111,7 +111,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted-foreground">
               {filteredAssets.length} asset{filteredAssets.length !== 1 ? 's' : ''} found
             </p>
           </div>

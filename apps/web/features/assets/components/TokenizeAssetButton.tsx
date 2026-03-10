@@ -133,7 +133,7 @@ export const TokenizeAssetButton: React.FC<TokenizeAssetButtonProps> = ({
     <>
       <button
         onClick={() => setShowModal(true)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors ${className || ''}`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:opacity-90 text-secondary-foreground font-medium transition-colors ${className || ''}`}
       >
         <IconCoins className="w-4 h-4" />
         Tokenize Asset
@@ -142,24 +142,24 @@ export const TokenizeAssetButton: React.FC<TokenizeAssetButtonProps> = ({
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
+          <div className="relative bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <IconCoins className="w-5 h-5 text-purple-400" />
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <IconCoins className="w-5 h-5 text-secondary" />
                 Tokenize Asset
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-zinc-400 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <IconX className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Create fractional tokens for this verified asset. This will mint{' '}
-              <span className="text-white font-medium">
+              <span className="text-foreground font-medium">
                 {asset.totalFractions.toNumber().toLocaleString()}
               </span>{' '}
               tokens (6 decimals) representing ownership fractions.
@@ -168,13 +168,13 @@ export const TokenizeAssetButton: React.FC<TokenizeAssetButtonProps> = ({
             <form onSubmit={handleTokenize} className="space-y-4">
               {/* Token Name */}
               <div>
-                <label className="block text-sm text-zinc-400 mb-1.5">Token Name *</label>
+                <label className="block text-sm text-muted-foreground mb-1.5">Token Name *</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Mumbai Land Token"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50"
                   maxLength={32}
                   required
                 />
@@ -182,13 +182,13 @@ export const TokenizeAssetButton: React.FC<TokenizeAssetButtonProps> = ({
 
               {/* Token Symbol */}
               <div>
-                <label className="block text-sm text-zinc-400 mb-1.5">Token Symbol *</label>
+                <label className="block text-sm text-muted-foreground mb-1.5">Token Symbol *</label>
                 <input
                   type="text"
                   value={formData.symbol}
                   onChange={(e) => setFormData({ ...formData, symbol: e.target.value.toUpperCase() })}
                   placeholder="e.g., MLT"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50"
                   maxLength={10}
                   required
                 />
@@ -196,18 +196,18 @@ export const TokenizeAssetButton: React.FC<TokenizeAssetButtonProps> = ({
 
               {/* Token Metadata URI (optional) */}
               <div>
-                <label className="block text-sm text-zinc-400 mb-1.5">Metadata URI (optional)</label>
+                <label className="block text-sm text-muted-foreground mb-1.5">Metadata URI (optional)</label>
                 <input
                   type="url"
                   value={formData.uri}
                   onChange={(e) => setFormData({ ...formData, uri: e.target.value })}
                   placeholder="https://arweave.net/..."
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50"
                 />
               </div>
 
               {/* Info box */}
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-sm text-purple-300">
+              <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-3 text-sm text-secondary">
                 <p>A new SPL token mint will be created with the asset PDA as the mint authority. All fractions will be minted to the asset&apos;s token account.</p>
               </div>
 
@@ -215,7 +215,7 @@ export const TokenizeAssetButton: React.FC<TokenizeAssetButtonProps> = ({
               <button
                 type="submit"
                 disabled={loading || !formData.name || !formData.symbol}
-                className="w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-medium transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-lg bg-secondary hover:opacity-90 disabled:bg-muted disabled:text-muted-foreground text-secondary-foreground font-medium transition-colors flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

@@ -110,26 +110,26 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4">
+      <div className="relative bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <IconFileUpload className="w-5 h-5 text-blue-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <IconFileUpload className="w-5 h-5 text-primary" />
             Add Document
           </h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Document Type <span className="text-red-400">*</span>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
+              Document Type <span className="text-destructive">*</span>
             </label>
             <select
               value={formData.docType}
               onChange={(e) => setFormData({ ...formData, docType: e.target.value })}
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-zinc-500 text-sm"
+              className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-ring text-sm"
               required
             >
               <option value="">Select type...</option>
@@ -142,21 +142,21 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Document URI <span className="text-red-400">*</span>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
+              Document URI <span className="text-destructive">*</span>
             </label>
             <input
               type="url"
               value={formData.uri}
               onChange={(e) => setFormData({ ...formData, uri: e.target.value })}
               placeholder="https://arweave.net/... or ipfs://..."
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-sm"
+              className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               Document Content (for hash)
             </label>
             <textarea
@@ -164,10 +164,10 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               placeholder="Paste content for SHA256 hash generation..."
               rows={3}
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-sm resize-none"
+              className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm resize-none"
             />
             {formData.content && (
-              <p className="mt-1 text-xs text-green-400">
+              <p className="mt-1 text-xs text-chart-1">
                 Hash: {CryptoJS.SHA256(formData.content).toString(CryptoJS.enc.Hex).slice(0, 20)}...
               </p>
             )}
@@ -176,7 +176,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors disabled:opacity-50"
           >
             {loading ? (
               <>

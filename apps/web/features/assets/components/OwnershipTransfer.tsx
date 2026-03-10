@@ -121,30 +121,30 @@ export const OwnershipTransfer: React.FC<OwnershipTransferProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
+      <div className="relative bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <IconTransfer className="w-5 h-5 text-purple-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <IconTransfer className="w-5 h-5 text-secondary" />
             Transfer Fractions
           </h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="bg-zinc-800/50 rounded-lg p-4 space-y-2">
+        <div className="bg-muted rounded-lg p-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Asset</span>
-            <span className="text-white font-medium">{asset.assetId}</span>
+            <span className="text-muted-foreground">Asset</span>
+            <span className="text-foreground font-medium">{asset.assetId}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Your Holdings</span>
-            <span className="text-white font-medium">{ownership.fractionsOwned.toString()} fractions</span>
+            <span className="text-muted-foreground">Your Holdings</span>
+            <span className="text-foreground font-medium">{ownership.fractionsOwned.toString()} fractions</span>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
             Recipient Wallet Address
           </label>
           <input
@@ -152,12 +152,12 @@ export const OwnershipTransfer: React.FC<OwnershipTransferProps> = ({
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
             placeholder="Paste Solana wallet address..."
-            className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-sm font-mono"
+            className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm font-mono"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
             Fractions to Transfer
           </label>
           <div className="relative">
@@ -168,12 +168,12 @@ export const OwnershipTransfer: React.FC<OwnershipTransferProps> = ({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount..."
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-sm"
+              className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
             />
             <button
               type="button"
               onClick={() => setAmount(maxTransferable.toString())}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-purple-400 hover:text-purple-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-secondary hover:opacity-80"
             >
               MAX
             </button>
@@ -189,7 +189,7 @@ export const OwnershipTransfer: React.FC<OwnershipTransferProps> = ({
         <button
           onClick={handleTransfer}
           disabled={loading || !recipient || fractionsToTransfer <= 0 || fractionsToTransfer > maxTransferable}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-secondary text-secondary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

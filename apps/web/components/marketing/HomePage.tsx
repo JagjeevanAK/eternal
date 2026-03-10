@@ -8,6 +8,8 @@ import { Hero } from '@/components/marketing/Hero';
 import { HowItWorks } from '@/components/marketing/HowItWorks';
 import { FAQ } from '@/components/marketing/FAQ';
 import { NetworkBadge } from '@/components/layout/NetworkBadge';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useTheme } from 'next-themes';
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -24,25 +26,28 @@ const structuredData = {
 };
 
 const HomePage = () => {
+  const { resolvedTheme } = useTheme();
+  const particleColor = resolvedTheme === 'dark' ? '#ffffff' : '#1a1a1a';
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div className="min-h-screen bg-black text-white overflow-hidden">
+      <div className="min-h-screen bg-background text-foreground overflow-hidden">
         <div className="relative min-h-screen flex flex-col">
           <Particles
             className="absolute inset-0"
             quantity={300}
             staticity={30}
             ease={50}
-            color="#ffffff"
+            color={particleColor}
           />
           <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col p-8">
-            <header className="flex items-center justify-between border-b border-zinc-900 pb-6">
+            <header className="flex items-center justify-between border-b border-border pb-6">
               <div className="flex items-center gap-3">
-                <Link href="/" className="text-lg font-semibold tracking-tight text-white">
+                <Link href="/" className="text-lg font-semibold tracking-tight text-foreground">
                   Eternal
                 </Link>
                 <NetworkBadge />
@@ -50,16 +55,17 @@ const HomePage = () => {
               <nav className="flex items-center gap-2">
                 <Link
                   href="/marketplace"
-                  className="rounded-lg px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-900 hover:text-white"
+                  className="rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
                   Marketplace
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-lg px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-900 hover:text-white"
+                  className="rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
                   Register
                 </Link>
+                <ThemeToggle />
               </nav>
             </header>
 
@@ -69,8 +75,8 @@ const HomePage = () => {
             <HowItWorks />
             <FAQ />
 
-            <div className="pt-16 border-t border-zinc-900">
-              <p className="text-sm text-zinc-500">
+            <div className="pt-16 border-t border-border">
+              <p className="text-sm text-muted-foreground">
                 Built for registering, verifying, tokenizing, and trading real-world assets on Solana.
               </p>
             </div>

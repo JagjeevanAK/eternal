@@ -15,7 +15,7 @@ const CheckIcon = () => {
       height="24"
       viewBox="0 0 24 24"
       fill="currentColor"
-      className="mt-1 h-4 w-4 flex-shrink-0 text-cyan-300"
+      className="mt-1 h-4 w-4 shrink-0 text-primary"
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path
@@ -30,26 +30,26 @@ const CheckIcon = () => {
 export const HowItWorks = () => {
   return (
     <section className="mt-24 flex justify-center">
-      <div className="relative max-w-4xl overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.04] p-8 text-left backdrop-blur-sm md:p-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.18),_transparent_38%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.14),_transparent_30%)]" />
+      <div className="relative max-w-4xl overflow-hidden rounded-4xl border border-border bg-card/50 p-8 text-left backdrop-blur-sm md:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--primary)/0.18,transparent_38%),radial-gradient(circle_at_bottom_right,var(--ring)/0.14,transparent_30%)]" />
         <div className="relative grid gap-10 md:grid-cols-[0.9fr,1.1fr]">
           <div className="space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300/80">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary/80">
               Asset Flow
             </p>
-            <h2 className="text-3xl font-semibold tracking-tight text-white">
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">
               From registration to secondary trading.
             </h2>
-            <p className="max-w-md text-sm leading-7 text-zinc-300">
+            <p className="max-w-md text-sm leading-7 text-muted-foreground">
               Eternal keeps the lifecycle explicit: issuer onboarding, document-backed
               verification, tokenization, then marketplace liquidity on Solana with either
               a devnet or localnet demo flow.
             </p>
-            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+            <div className="rounded-2xl border border-border bg-background/30 p-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                 Supported Assets
               </p>
-              <p className="mt-3 text-sm leading-7 text-zinc-300">
+              <p className="mt-3 text-sm leading-7 text-muted-foreground">
                 Real estate, gold, vehicles, art, infrastructure, and other
                 high-value assets that benefit from shared ownership and transparent transfer.
               </p>
@@ -60,14 +60,14 @@ export const HowItWorks = () => {
             {steps.map((step, index) => (
               <li
                 key={step}
-                className="flex items-start gap-4 rounded-2xl border border-white/10 bg-black/40 px-4 py-4"
+                className="flex items-start gap-4 rounded-2xl border border-border bg-background/40 px-4 py-4"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 text-sm font-semibold text-cyan-300">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-sm font-semibold text-primary">
                   {index + 1}
                 </div>
                 <div className="flex min-w-0 gap-3">
                   <CheckIcon />
-                  <p className="pt-0.5 text-sm leading-6 text-zinc-100">{step}</p>
+                  <p className="pt-0.5 text-sm leading-6 text-foreground">{step}</p>
                 </div>
               </li>
             ))}

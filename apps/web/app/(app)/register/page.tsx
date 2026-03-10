@@ -10,16 +10,16 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-8">
-        <h1 className="flex items-center gap-3 text-2xl font-bold text-white">
-          <IconPlus className="h-7 w-7 text-blue-400" />
+        <h1 className="flex items-center gap-3 text-2xl font-bold text-foreground">
+          <IconPlus className="h-7 w-7 text-primary" />
           Register New Asset
         </h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Register a real-world asset on-chain and prepare it for verification.
         </p>
       </div>
 
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <RegisterAssetForm onSuccess={() => router.push('/marketplace')} />
       </div>
     </div>

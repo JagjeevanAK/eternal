@@ -132,8 +132,8 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Asset ID */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">
-          Asset ID <span className="text-red-400">*</span>
+        <label className="block text-sm font-medium text-muted-foreground mb-2">
+          Asset ID <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
@@ -141,16 +141,16 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
           onChange={(e) => setFormData({ ...formData, assetId: e.target.value })}
           placeholder="e.g., PROP-001, GOLD-BAR-42"
           maxLength={32}
-          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm"
+          className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
           required
         />
-        <p className="mt-1 text-xs text-zinc-500">Unique identifier for your asset (max 32 chars)</p>
+        <p className="mt-1 text-xs text-muted-foreground">Unique identifier for your asset (max 32 chars)</p>
       </div>
 
       {/* Asset Type */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">
-          Asset Type <span className="text-red-400">*</span>
+        <label className="block text-sm font-medium text-muted-foreground mb-2">
+          Asset Type <span className="text-destructive">*</span>
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {assetTypes.map((type) => (
@@ -160,12 +160,12 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
               onClick={() => setFormData({ ...formData, assetType: type.value })}
               className={`p-3 rounded-lg border text-left transition-all ${
                 formData.assetType === type.value
-                  ? 'bg-white/10 border-white/30 text-white'
-                  : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                  ? 'bg-primary/10 border-primary text-foreground'
+                  : 'bg-card border-border text-muted-foreground hover:border-ring'
               }`}
             >
               <p className="text-sm font-medium">{type.label}</p>
-              <p className="text-xs text-zinc-500 mt-0.5">{type.desc}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{type.desc}</p>
             </button>
           ))}
         </div>
@@ -174,8 +174,8 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
       {/* Valuation & Fractions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
-            Valuation (SOL) <span className="text-red-400">*</span>
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
+            Valuation (SOL) <span className="text-destructive">*</span>
           </label>
           <input
             type="number"
@@ -184,14 +184,14 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
             value={formData.valuation}
             onChange={(e) => setFormData({ ...formData, valuation: e.target.value })}
             placeholder="e.g., 100"
-            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm"
+            className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
             required
           />
-          <p className="mt-1 text-xs text-zinc-500">Total valuation in SOL</p>
+          <p className="mt-1 text-xs text-muted-foreground">Total valuation in SOL</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
-            Total Fractions <span className="text-red-400">*</span>
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
+            Total Fractions <span className="text-destructive">*</span>
           </label>
           <input
             type="number"
@@ -200,17 +200,17 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
             value={formData.totalFractions}
             onChange={(e) => setFormData({ ...formData, totalFractions: e.target.value })}
             placeholder="e.g., 1000"
-            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm"
+            className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
             required
           />
-          <p className="mt-1 text-xs text-zinc-500">Number of fractions to divide into</p>
+          <p className="mt-1 text-xs text-muted-foreground">Number of fractions to divide into</p>
         </div>
       </div>
 
       {/* Price Preview */}
       {formData.valuation && formData.totalFractions && (
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-          <p className="text-sm text-blue-400">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+          <p className="text-sm text-primary">
             Price per fraction:{' '}
             <span className="font-bold">
               {(parseFloat(formData.valuation) / parseInt(formData.totalFractions || '1')).toFixed(6)} SOL
@@ -221,46 +221,46 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
 
       {/* Location */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Location</label>
+        <label className="block text-sm font-medium text-muted-foreground mb-2">Location</label>
         <input
           type="text"
           value={formData.location}
           onChange={(e) => setFormData({ ...formData, location: e.target.value })}
           placeholder="e.g., Mumbai, Maharashtra, India"
           maxLength={64}
-          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm"
+          className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
         />
       </div>
 
       {/* Metadata URI */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Metadata URI</label>
+        <label className="block text-sm font-medium text-muted-foreground mb-2">Metadata URI</label>
         <input
           type="url"
           value={formData.metadataUri}
           onChange={(e) => setFormData({ ...formData, metadataUri: e.target.value })}
           placeholder="https://arweave.net/... or ipfs://..."
-          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm"
+          className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
         />
-        <p className="mt-1 text-xs text-zinc-500">IPFS or Arweave URI for asset metadata JSON</p>
+        <p className="mt-1 text-xs text-muted-foreground">IPFS or Arweave URI for asset metadata JSON</p>
       </div>
 
       {/* Documents URI */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Documents URI</label>
+        <label className="block text-sm font-medium text-muted-foreground mb-2">Documents URI</label>
         <input
           type="url"
           value={formData.documentsUri}
           onChange={(e) => setFormData({ ...formData, documentsUri: e.target.value })}
           placeholder="https://arweave.net/... or ipfs://..."
-          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm"
+          className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
         />
-        <p className="mt-1 text-xs text-zinc-500">URI for legal documents bundle</p>
+        <p className="mt-1 text-xs text-muted-foreground">URI for legal documents bundle</p>
       </div>
 
       {/* Document Hash Content */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-muted-foreground mb-2">
           Document Content (for hash verification)
         </label>
         <textarea
@@ -268,10 +268,10 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
           onChange={(e) => setFormData({ ...formData, documentContent: e.target.value })}
           placeholder="Paste document content here to auto-generate SHA256 hash..."
           rows={4}
-          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm resize-none"
+          className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm resize-none"
         />
         {formData.documentContent && (
-          <p className="mt-1 text-xs text-green-400">
+          <p className="mt-1 text-xs text-chart-1">
             Hash: {CryptoJS.SHA256(formData.documentContent).toString(CryptoJS.enc.Hex).slice(0, 16)}...
           </p>
         )}
@@ -281,7 +281,7 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
       <button
         type="submit"
         disabled={loading || !publicKey}
-        className="w-full flex items-center justify-center gap-2 py-3 bg-white text-black rounded-lg font-medium text-sm hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? (
           <>
@@ -297,7 +297,7 @@ export const RegisterAssetForm: React.FC<RegisterAssetFormProps> = ({ onSuccess 
       </button>
 
       {!publicKey && (
-        <p className="text-center text-sm text-zinc-500">Connect your wallet to register an asset</p>
+        <p className="text-center text-sm text-muted-foreground">Connect your wallet to register an asset</p>
       )}
     </form>
   );

@@ -68,7 +68,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetPubkey })
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
         <IconLoader2 className="w-8 h-8 animate-spin mb-4" />
         <p className="text-sm">Loading asset details...</p>
       </div>
@@ -77,12 +77,12 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetPubkey })
 
   if (error || !asset) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
-        <p className="text-lg font-medium text-white">Asset Not Found</p>
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <p className="text-lg font-medium text-foreground">Asset Not Found</p>
         <p className="text-sm mt-1">{error || 'This asset does not exist on-chain.'}</p>
         <button
           onClick={() => router.push('/marketplace')}
-          className="mt-4 px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700 transition-colors"
+          className="mt-4 px-4 py-2 bg-muted text-foreground rounded-lg text-sm hover:opacity-90 transition-colors"
         >
           Back to Marketplace
         </button>
@@ -109,7 +109,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetPubkey })
         <div className="mt-6">
           <button
             onClick={() => setShowDocUpload(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
           >
             Add Document
           </button>

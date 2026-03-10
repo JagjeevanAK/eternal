@@ -44,9 +44,9 @@ export const PlatformStats: React.FC = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 animate-pulse">
-            <div className="h-4 bg-zinc-800 rounded w-1/2 mb-3" />
-            <div className="h-8 bg-zinc-800 rounded w-3/4" />
+          <div key={i} className="bg-card border border-border rounded-xl p-5 animate-pulse">
+            <div className="h-4 bg-muted rounded w-1/2 mb-3" />
+            <div className="h-8 bg-muted rounded w-3/4" />
           </div>
         ))}
       </div>
@@ -59,36 +59,36 @@ export const PlatformStats: React.FC = () => {
     {
       label: 'Total Assets',
       value: config.totalAssets.toString(),
-      icon: <IconFileCheck className="w-5 h-5 text-blue-400" />,
-      color: 'text-blue-400',
+      icon: <IconFileCheck className="w-5 h-5 text-primary" />,
+      color: 'text-primary',
     },
     {
       label: 'Total Volume',
       value: formatLamports(config.totalVolume),
-      icon: <IconTrendingUp className="w-5 h-5 text-green-400" />,
-      color: 'text-green-400',
+      icon: <IconTrendingUp className="w-5 h-5 text-chart-1" />,
+      color: 'text-chart-1',
     },
     {
       label: 'Registration Fee',
       value: formatLamports(config.registrationFee),
-      icon: <IconCoins className="w-5 h-5 text-yellow-400" />,
-      color: 'text-yellow-400',
+      icon: <IconCoins className="w-5 h-5 text-chart-4" />,
+      color: 'text-chart-4',
     },
     {
       label: 'Trading Fee',
       value: `${config.tradingFeeBps / 100}%`,
-      icon: <IconActivity className="w-5 h-5 text-purple-400" />,
-      color: 'text-purple-400',
+      icon: <IconActivity className="w-5 h-5 text-secondary" />,
+      color: 'text-secondary',
     },
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => (
-        <div key={stat.label} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5">
+        <div key={stat.label} className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center gap-2 mb-2">
             {stat.icon}
-            <span className="text-sm text-zinc-400">{stat.label}</span>
+            <span className="text-sm text-muted-foreground">{stat.label}</span>
           </div>
           <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
         </div>

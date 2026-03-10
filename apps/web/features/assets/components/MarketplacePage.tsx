@@ -16,11 +16,11 @@ export const MarketplacePage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-          <IconBuildingStore className="w-7 h-7 text-green-400" />
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+          <IconBuildingStore className="w-7 h-7 text-chart-1" />
           Marketplace
         </h1>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Browse and invest in tokenized real-world assets
         </p>
       </div>

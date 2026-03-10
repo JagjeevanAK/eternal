@@ -118,37 +118,37 @@ export const SellFractionsModal: React.FC<SellFractionsModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
+      <div className="relative bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <IconCurrencyDollar className="w-5 h-5 text-orange-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <IconCurrencyDollar className="w-5 h-5 text-destructive" />
             Sell Fractions
           </h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
         {/* Ownership Info */}
-        <div className="bg-zinc-800/50 rounded-lg p-4 space-y-2">
+        <div className="bg-muted rounded-lg p-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Asset</span>
-            <span className="text-white font-medium">{asset.assetId}</span>
+            <span className="text-muted-foreground">Asset</span>
+            <span className="text-foreground font-medium">{asset.assetId}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Your Holdings</span>
-            <span className="text-white font-medium">{ownership.fractionsOwned.toString()} fractions</span>
+            <span className="text-muted-foreground">Your Holdings</span>
+            <span className="text-foreground font-medium">{ownership.fractionsOwned.toString()} fractions</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Current Price</span>
-            <span className="text-white font-medium">{formatLamports(asset.pricePerFraction)}</span>
+            <span className="text-muted-foreground">Current Price</span>
+            <span className="text-foreground font-medium">{formatLamports(asset.pricePerFraction)}</span>
           </div>
         </div>
 
         {/* Amount Input */}
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
             Fractions to Sell
           </label>
           <div className="relative">
@@ -159,12 +159,12 @@ export const SellFractionsModal: React.FC<SellFractionsModalProps> = ({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount..."
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-sm"
+              className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
             />
             <button
               type="button"
               onClick={() => setAmount(maxSellable.toString())}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-orange-400 hover:text-orange-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-destructive hover:opacity-80"
             >
               MAX
             </button>
@@ -173,16 +173,16 @@ export const SellFractionsModal: React.FC<SellFractionsModalProps> = ({
 
         {/* Revenue Summary */}
         {fractionsToSell > 0 && (
-          <div className="bg-zinc-800/50 rounded-lg p-4 space-y-2">
+          <div className="bg-muted rounded-lg p-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">{fractionsToSell} × {formatLamports(asset.pricePerFraction)}</span>
-              <span className="text-white font-medium">{formatLamports(totalRevenue)}</span>
+              <span className="text-muted-foreground">{fractionsToSell} × {formatLamports(asset.pricePerFraction)}</span>
+              <span className="text-foreground font-medium">{formatLamports(totalRevenue)}</span>
             </div>
-            <div className="border-t border-zinc-700 pt-2 flex justify-between text-sm">
-              <span className="text-zinc-300 font-medium">You Receive (est.)</span>
-              <span className="text-green-400 font-bold">{formatLamports(totalRevenue)}</span>
+            <div className="border-t border-border pt-2 flex justify-between text-sm">
+              <span className="text-foreground font-medium">You Receive (est.)</span>
+              <span className="text-chart-1 font-bold">{formatLamports(totalRevenue)}</span>
             </div>
-            <p className="text-xs text-zinc-500">* Trading fees will be deducted</p>
+            <p className="text-xs text-muted-foreground">* Trading fees will be deducted</p>
           </div>
         )}
 
@@ -190,7 +190,7 @@ export const SellFractionsModal: React.FC<SellFractionsModalProps> = ({
         <button
           onClick={handleSell}
           disabled={loading || fractionsToSell <= 0 || fractionsToSell > maxSellable}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-orange-600 text-white rounded-lg font-medium text-sm hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-destructive text-destructive-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

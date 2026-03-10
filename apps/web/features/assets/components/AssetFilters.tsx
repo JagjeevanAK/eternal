@@ -67,12 +67,12 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
             placeholder="Search assets by ID or location..."
             value={filters.searchQuery}
             onChange={(e) => onChange({ ...filters, searchQuery: e.target.value })}
-            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-sm"
+            className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
           />
           {filters.searchQuery && (
             <button
               onClick={() => onChange({ ...filters, searchQuery: '' })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <IconX className="w-4 h-4" />
             </button>
@@ -83,24 +83,24 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
           className={cn(
             'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors',
             showFilters
-              ? 'bg-white text-black border-white'
-              : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:border-zinc-600'
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-card text-muted-foreground border-border hover:border-ring/40'
           )}
         >
           <IconFilter className="w-4 h-4" />
           Filters
           {hasActiveFilters && (
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="w-2 h-2 rounded-full bg-primary" />
           )}
         </button>
       </div>
 
       {/* Filter options */}
       {showFilters && (
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 space-y-4">
+        <div className="bg-card border border-border rounded-lg p-4 space-y-4">
           {/* Asset Type Filter */}
           <div>
-            <label className="text-sm font-medium text-zinc-400 mb-2 block">Asset Type</label>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Asset Type</label>
             <div className="flex flex-wrap gap-2">
               {assetTypes.map((type) => (
                 <button
@@ -114,8 +114,8 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
                     filters.assetType === type.value
-                      ? 'bg-white text-black border-white'
-                      : 'bg-zinc-800/50 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-muted text-muted-foreground border-border hover:border-ring/40'
                   )}
                 >
                   {type.label}
@@ -126,7 +126,7 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
 
           {/* Status Filter */}
           <div>
-            <label className="text-sm font-medium text-zinc-400 mb-2 block">Status</label>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Status</label>
             <div className="flex flex-wrap gap-2">
               {statuses.map((s) => (
                 <button
@@ -140,8 +140,8 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
                     filters.status === s.value
-                      ? 'bg-white text-black border-white'
-                      : 'bg-zinc-800/50 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-muted text-muted-foreground border-border hover:border-ring/40'
                   )}
                 >
                   {s.label}
@@ -152,7 +152,7 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
 
           {/* Sort */}
           <div>
-            <label className="text-sm font-medium text-zinc-400 mb-2 block">Sort By</label>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Sort By</label>
             <div className="flex flex-wrap gap-2">
               {sortOptions.map((opt) => (
                 <button
@@ -161,8 +161,8 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
                     filters.sortBy === opt.value
-                      ? 'bg-white text-black border-white'
-                      : 'bg-zinc-800/50 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-muted text-muted-foreground border-border hover:border-ring/40'
                   )}
                 >
                   {opt.label}
@@ -175,7 +175,7 @@ export const AssetFilters: React.FC<AssetFiltersProps> = ({ filters, onChange })
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-sm text-zinc-500 hover:text-white transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Clear all filters
             </button>

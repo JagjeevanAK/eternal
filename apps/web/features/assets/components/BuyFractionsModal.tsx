@@ -118,31 +118,31 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
+      <div className="relative bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <IconShoppingCart className="w-5 h-5 text-green-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <IconShoppingCart className="w-5 h-5 text-chart-1" />
             Buy Fractions
           </h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
         {/* Asset Info */}
-        <div className="bg-zinc-800/50 rounded-lg p-4 space-y-2">
+        <div className="bg-muted rounded-lg p-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Asset</span>
-            <span className="text-white font-medium">{asset.assetId}</span>
+            <span className="text-muted-foreground">Asset</span>
+            <span className="text-foreground font-medium">{asset.assetId}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Price/Fraction</span>
-            <span className="text-white font-medium">{formatLamports(asset.pricePerFraction)}</span>
+            <span className="text-muted-foreground">Price/Fraction</span>
+            <span className="text-foreground font-medium">{formatLamports(asset.pricePerFraction)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Available</span>
-            <span className="text-white font-medium">
+            <span className="text-muted-foreground">Available</span>
+            <span className="text-foreground font-medium">
               {asset.availableFractions.toString()} / {asset.totalFractions.toString()}
             </span>
           </div>
@@ -150,7 +150,7 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
 
         {/* Amount Input */}
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
             Number of Fractions
           </label>
           <div className="relative">
@@ -161,12 +161,12 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount..."
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-sm"
+              className="w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
             />
             <button
               type="button"
               onClick={() => setAmount(maxFractions.toString())}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-400 hover:text-blue-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary hover:opacity-80"
             >
               MAX
             </button>
@@ -175,14 +175,14 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
 
         {/* Cost Summary */}
         {fractionsToBuy > 0 && (
-          <div className="bg-zinc-800/50 rounded-lg p-4 space-y-2">
+          <div className="bg-muted rounded-lg p-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">{fractionsToBuy} × {formatLamports(asset.pricePerFraction)}</span>
-              <span className="text-white font-medium">{formatLamports(totalCost)}</span>
+              <span className="text-muted-foreground">{fractionsToBuy} × {formatLamports(asset.pricePerFraction)}</span>
+              <span className="text-foreground font-medium">{formatLamports(totalCost)}</span>
             </div>
-            <div className="border-t border-zinc-700 pt-2 flex justify-between text-sm">
-              <span className="text-zinc-300 font-medium">Total Cost</span>
-              <span className="text-white font-bold">{formatLamports(totalCost)}</span>
+            <div className="border-t border-border pt-2 flex justify-between text-sm">
+              <span className="text-foreground font-medium">Total Cost</span>
+              <span className="text-foreground font-bold">{formatLamports(totalCost)}</span>
             </div>
           </div>
         )}
@@ -191,7 +191,7 @@ export const BuyFractionsModal: React.FC<BuyFractionsModalProps> = ({
         <button
           onClick={handleBuy}
           disabled={loading || fractionsToBuy <= 0 || fractionsToBuy > maxFractions}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-green-600 text-white rounded-lg font-medium text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-chart-1 text-primary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

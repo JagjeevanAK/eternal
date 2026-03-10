@@ -18,12 +18,12 @@ export default function AssetDetailPage() {
 
   if (!assetPubkey) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
-        <p className="text-lg font-medium text-white">Invalid Asset ID</p>
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <p className="text-lg font-medium text-foreground">Invalid Asset ID</p>
         <p className="mt-1 text-sm">The asset address provided is not valid.</p>
         <Link
           href="/marketplace"
-          className="mt-4 rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white transition-colors hover:bg-zinc-700"
+          className="mt-4 rounded-lg bg-muted px-4 py-2 text-sm text-foreground transition-colors hover:opacity-90"
         >
           Back to Marketplace
         </Link>
