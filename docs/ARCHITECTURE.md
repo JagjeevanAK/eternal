@@ -2,43 +2,54 @@
 
 ## Monorepo Shape
 
-The repo is organized around one product: `Eternal`, an asset-tokenization platform.
+The repo is organized around one local-first product: `Eternal`, a tokenized asset marketplace for company-share and real-estate issues.
 
 ```text
+apps/api
 apps/web
+apps/worker
 programs/asset-tokenization
 docs
 ```
 
+## Product Stack
+
+- `apps/web` contains the Next.js frontend and product shell.
+- `apps/api` contains the local Bun API with seeded product state and mock services.
+- `apps/worker` processes local settlement jobs for payments, primary allocations, and secondary trades.
+- `programs/asset-tokenization` contains the Anchor program for issuer approval, investor allowlisting, asset offerings, holdings, listings, trades, and distributions.
+
 ## Web App
 
-`apps/web` contains the Next.js app.
+`apps/web` now exposes:
 
-- `app/page.tsx`: marketing landing page
-- `app/(app)/*`: authenticated app routes that share one shell
-- `components/ui`: shared UI primitives used across features and marketing
-- `components/marketing`: landing-page-only components
-- `features/assets`: asset-tokenization feature code
+- public routes: `/`, `/login`, `/marketplace`, `/marketplace/[slug]`, `/kyc`
+- authenticated routes: `/dashboard`, `/portfolio`, `/orders`, `/payments`, `/documents`, `/issuer`, `/admin`
+- shared providers for theme, wallet, and local product session state
 
-## Asset Feature Boundary
+The active product UI lives under `apps/web/features/product`.
 
-The active product code is grouped under `apps/web/features/assets`:
+## Local Product Services
 
-- `components`: marketplace, portfolio, admin, tokenization, and modal flows
-- `hooks`: Anchor program access and on-chain data fetching
-- `types.ts`: asset program account and helper types
-- `idl/asset_tokenization.json`: frontend-compatible IDL snapshot
+`apps/api` is the source of truth for:
 
-## Program Package
+- seeded user accounts and local sessions
+- KYC records
+- issuer asset submissions
+- asset catalogue and due-diligence documents
+- orders, payments, holdings, listings, trades, and distributions
+- admin queues and local notifications
 
-`programs/asset-tokenization` contains the Anchor workspace:
+`apps/worker` mutates that state asynchronously to simulate:
 
-- Rust program sources in `programs/asset_tokenization/src`
-- integration tests in `tests`
-- migrations and Anchor config for local and devnet work
+- primary order settlement
+- secondary trade settlement
+- treasury fee accrual
+- issuer and investor notifications
 
 ## Current Boundaries
 
-- The repo is asset-tokenization-only.
-- The old legacy product path has been removed from active source, routes, and docs.
-- The web app defaults to devnet and can be pointed to localnet with `NEXT_PUBLIC_SOLANA_CLUSTER` and `NEXT_PUBLIC_SOLANA_RPC_URL`.
+- The user-facing product is asset-first and INR-native.
+- Wallet connection is optional and no longer the main onboarding path.
+- The older generic routes now redirect into the live marketplace flow or are marked as legacy.
+- The API and worker still drive the demo settlement flow, but the on-chain program now mirrors the same compliant asset lifecycle instead of the older SOL-denominated asset/fractions model.

@@ -1,13 +1,15 @@
 # Eternal
 
-Eternal is an asset-tokenization monorepo with a Next.js frontend and a Solana Anchor program. The product is focused on registering, verifying, tokenizing, and trading real-world assets on Solana.
+Eternal is a local-first tokenized asset marketplace with a Next.js frontend, a Bun API, a worker process, and a Solana Anchor program that mirrors the lifecycle for issuers, investors, offerings, listings, and distributions across company-share and real-estate assets.
 
 ## Workspace Layout
 
 ```text
 eternal/
 ├── apps/
-│   └── web/                   # Next.js app
+│   ├── api/                   # Local product API with seeded state and mock services
+│   ├── web/                   # Next.js product frontend
+│   └── worker/                # Local settlement and async job worker
 ├── programs/
 │   └── asset-tokenization/    # Anchor program, tests, migrations
 ├── docs/
@@ -23,15 +25,13 @@ eternal/
 # Install workspace dependencies
 bun install
 
-# One-command local demo setup
+# One-command local product stack
 bun dev
-# or
-bun run dev
 
-# Start only the web app on devnet
+# Start pieces individually
+bun run dev:api
+bun run dev:worker
 bun run dev:web
-
-# Start the web app against localnet
 bun run dev:web:local
 
 # Build the web app
@@ -45,14 +45,29 @@ bun run check
 bun run test:program
 ```
 
-## Program Details
+## Local Product Flow
 
-- Program package: `programs/asset-tokenization`
-- Program ID: `EjLLVvxkMtssALhHv4dvKhkxYJQKGmMUcB38DboGMYtJ`
+When `bun dev` is running:
+
+- web app: `http://localhost:3000`
+- local API: `http://127.0.0.1:4000`
+- worker: local async settlement loop over seeded state
+- Solana localnet: `http://127.0.0.1:8899`
+
+The product now centers on:
+
+- seeded app-account login with mock OTP (`000000`)
+- KYC review flow
+- issuer asset submissions
+- admin approval and publish flow
+- INR-denominated investing
+- local secondary listings with worker-led settlement
+- optional Solana wallet binding
+- an Anchor contract that models issuer approval, investor allowlisting, asset offerings, holdings, listings, trades, and distributions
 
 ## Docs
 
-- [demo.md](demo.md): hackathon demo sequence for judges and users
+- [demo.md](demo.md): local demo sequence for the product stack
 - [docs/SETUP.md](docs/SETUP.md): local development and toolchain setup
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): repo layout and active app boundaries
 - [programs/asset-tokenization/README.md](programs/asset-tokenization/README.md): program-specific notes
