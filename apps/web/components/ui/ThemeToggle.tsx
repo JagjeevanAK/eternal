@@ -24,31 +24,14 @@ export function ThemeToggle({ className }: { className?: string }) {
         typeof document !== 'undefined' &&
         'startViewTransition' in document
       ) {
-        // Use native View Transition for ripple
-        const overlay = document.createElement('div');
-        overlay.className = 'theme-ripple-overlay';
-        overlay.style.setProperty('--ripple-x', `${x}px`);
-        overlay.style.setProperty('--ripple-y', `${y}px`);
-        overlay.style.backgroundColor =
-          nextTheme === 'dark'
-            ? 'oklch(0.1776 0 0)'
-            : 'oklch(0.9821 0 0)';
+        // Set ripple origin as CSS custom properties
+        document.documentElement.style.setProperty('--ripple-x', `${x}px`);
+        document.documentElement.style.setProperty('--ripple-y', `${y}px`);
 
-        document.body.appendChild(overlay);
-
-        // Trigger animation
-        requestAnimationFrame(() => {
-          overlay.classList.add('animate');
-        });
-
-        // Switch theme midway
-        setTimeout(() => {
+        // Use the View Transition API — it captures snapshots of old/new states
+        // so actual page content stays visible during the ripple
+        (document as any).startViewTransition(() => {
           setTheme(nextTheme);
-        }, 300);
-
-        // Remove overlay after animation completes
-        overlay.addEventListener('animationend', () => {
-          overlay.remove();
         });
       } else {
         // Fallback: just switch

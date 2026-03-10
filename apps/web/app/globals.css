@@ -210,17 +210,15 @@
     }
 }
 
-/* ── Ripple theme transition ── */
-.theme-ripple-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    pointer-events: none;
-    clip-path: circle(0% at var(--ripple-x, 50%) var(--ripple-y, 50%));
+/* ── Ripple theme transition (View Transition API) ── */
+::view-transition-old(root) {
+    animation: none;
+    z-index: 1;
 }
 
-.theme-ripple-overlay.animate {
+::view-transition-new(root) {
     animation: ripple-expand 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    z-index: 9999;
 }
 
 @keyframes ripple-expand {
