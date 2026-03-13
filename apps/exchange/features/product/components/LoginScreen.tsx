@@ -1,15 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useSession } from "@/features/product/context/SessionContext";
 import { formatRole } from "@/features/product/lib/format";
 import { apiFetch } from "@/lib/product-api";
-import type { SessionUser } from "@/features/product/types";
+import type { SessionUser, UserRole } from "@/features/product/types";
 
-const nextRouteForRole = (role: "admin" | "issuer" | "investor") => {
-  void role;
+const ISSUANCE_PORTAL_URL =
+  process.env.NEXT_PUBLIC_ISSUANCE_PORTAL_URL ?? "http://localhost:3001";
+const ADMIN_PORTAL_URL =
+  process.env.NEXT_PUBLIC_ADMIN_PORTAL_URL ?? "http://localhost:3002";
+
+const nextRouteForRole = (role: UserRole) => {
+  if (role === "admin") {
+    return `${ADMIN_PORTAL_URL}/review`;
+  }
+
+  if (role === "issuer") {
+    return `${ISSUANCE_PORTAL_URL}/issuer`;
+  }
+
   return "/dashboard";
 };
 
@@ -25,13 +38,28 @@ export function LoginScreen() {
   const [signupEmail, setSignupEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const navigateToRoleHome = useCallback(
+    (role: UserRole) => {
+      const nextTarget =
+        role === "investor" ? searchParams.get("next") ?? nextRouteForRole(role) : nextRouteForRole(role);
+
+      if (nextTarget.startsWith("http://") || nextTarget.startsWith("https://")) {
+        window.location.assign(nextTarget);
+        return;
+      }
+
+      router.replace(nextTarget);
+    },
+    [router, searchParams],
+  );
+
   useEffect(() => {
     if (!user) {
       return;
     }
 
-    router.replace(searchParams.get("next") ?? nextRouteForRole(user.role));
-  }, [router, searchParams, user]);
+    navigateToRoleHome(user.role);
+  }, [navigateToRoleHome, user]);
 
   const startOtp = async (value: string, successTitle?: string) => {
     const response = await requestOtp(value.trim());
@@ -104,8 +132,12 @@ export function LoginScreen() {
 
     try {
       const loggedInUser = await loginWithOtp(identifier, code);
-      toast.success("Signed in successfully.");
-      router.replace(searchParams.get("next") ?? nextRouteForRole(loggedInUser.role));
+      toast.success(
+        loggedInUser.role === "investor"
+          ? "Signed in successfully."
+          : `Exchange is investor-only. Continue in the ${formatRole(loggedInUser.role)} portal.`,
+      );
+      navigateToRoleHome(loggedInUser.role);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to verify OTP.");
     } finally {
@@ -122,8 +154,12 @@ export function LoginScreen() {
 
     try {
       const loggedInUser = await loginWithOtp(value, "000000");
-      toast.success("Signed in with seeded local account.");
-      router.replace(searchParams.get("next") ?? nextRouteForRole(loggedInUser.role));
+      toast.success(
+        loggedInUser.role === "investor"
+          ? "Signed in with seeded local account."
+          : `Exchange is investor-only. Continue in the ${formatRole(loggedInUser.role)} portal.`,
+      );
+      navigateToRoleHome(loggedInUser.role);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to sign in.");
     } finally {
@@ -138,11 +174,12 @@ export function LoginScreen() {
           Sign in
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-foreground">
-          Email OTP for registered users, `000000` for seeded local accounts.
+          Investor sign in for the exchange, `000000` for seeded local investor accounts.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Use a registered email to receive a 6-digit OTP over Resend. Seeded `@eternal.local`
-          users do not need signup and can continue with `000000`.
+          Use a registered investor email to receive a 6-digit OTP over Resend. Seeded
+          `@eternal.local` investor accounts do not need signup and can continue with `000000`.
+          Issuer and admin users should use their dedicated portals below.
         </p>
 
         <div className="mt-8 space-y-4">
@@ -240,10 +277,15 @@ export function LoginScreen() {
             Seeded users
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-foreground">Jump straight into the local flow</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Exchange quick login is for investor accounts. Issuer and admin users should use their dedicated portals.
+          </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {demoUsers.map((demoUser) => (
+          {demoUsers
+            .filter((demoUser) => demoUser.role === "investor")
+            .map((demoUser) => (
             <button
               key={demoUser.identifier}
               onClick={() => handleQuickLogin(demoUser.identifier)}
@@ -263,6 +305,27 @@ export function LoginScreen() {
               <p className="mt-1 text-sm text-muted-foreground">{demoUser.phone}</p>
             </button>
           ))}
+        </div>
+
+        <div className="rounded-[1.5rem] border border-border bg-card p-5">
+          <p className="text-sm font-medium text-foreground">Need issuer or admin access?</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Those workflows no longer live in the exchange UI.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={`${ISSUANCE_PORTAL_URL}/issuer`}
+              className="rounded-2xl border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background"
+            >
+              Open issuer portal
+            </Link>
+            <Link
+              href={`${ADMIN_PORTAL_URL}/review`}
+              className="rounded-2xl border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background"
+            >
+              Open admin portal
+            </Link>
+          </div>
         </div>
       </section>
     </div>

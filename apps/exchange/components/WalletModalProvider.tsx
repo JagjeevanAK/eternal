@@ -1,13 +1,40 @@
 'use client';
 
-import type { ComponentProps, PropsWithChildren } from 'react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { type ComponentType, useEffect, useState } from 'react';
+import type { WalletModalProviderProps } from '@solana/wallet-adapter-react-ui';
 
-type WalletModalProviderWrapperProps = PropsWithChildren<ComponentProps<typeof WalletModalProvider>>;
+type WalletModalProviderWrapperProps = WalletModalProviderProps;
 
 export default function WalletModalProviderWrapper({
   children,
   ...props
 }: WalletModalProviderWrapperProps) {
-  return <WalletModalProvider {...props}>{children}</WalletModalProvider>;
+  const [WalletModalProviderComponent, setWalletModalProviderComponent] =
+    useState<ComponentType<WalletModalProviderProps> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void import('@solana/wallet-adapter-react-ui')
+      .then((module) => {
+        if (!cancelled) {
+          setWalletModalProviderComponent(() => module.WalletModalProvider);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setWalletModalProviderComponent(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!WalletModalProviderComponent) {
+    return <>{children}</>;
+  }
+
+  return <WalletModalProviderComponent {...props}>{children}</WalletModalProviderComponent>;
 }

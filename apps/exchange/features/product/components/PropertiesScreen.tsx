@@ -47,7 +47,7 @@ export function PropertiesScreen() {
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-foreground">Browse approved live assets</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             Browse company-share offerings and real-estate inventory that already cleared review. Drafts, owner proof
-            checks, and publishing workflows now live in the separate issuance portal.
+            checks, review decisions, and publishing workflows now live in the separate issuer and admin apps.
           </p>
         </div>
         <Link

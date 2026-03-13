@@ -52,6 +52,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await apiFetch<{ user: SessionUser }>("/session", { token: nextToken });
+      if (response.user.role !== "investor") {
+        setStoredSessionToken(null);
+        startTransition(() => {
+          setToken(null);
+          setUser(null);
+          setLoading(false);
+        });
+        return;
+      }
+
       startTransition(() => {
         setToken(nextToken);
         setUser(response.user);
@@ -105,6 +115,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       method: "POST",
       body: { identifier, code },
     });
+
+    if (response.user.role !== "investor") {
+      setStoredSessionToken(null);
+      startTransition(() => {
+        setToken(null);
+        setUser(null);
+      });
+      return response.user;
+    }
 
     setStoredSessionToken(response.token);
     startTransition(() => {

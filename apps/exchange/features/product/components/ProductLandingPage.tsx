@@ -14,7 +14,7 @@ const highlights = [
   },
   {
     title: "Issuance kept separate",
-    description: "New submissions, owner verification, and admin review now live in the dedicated issuance portal.",
+    description: "New submissions now live in the issuer portal, while review and publishing move through the admin app.",
     icon: ShieldCheck,
   },
   {
@@ -89,8 +89,8 @@ export function ProductLandingPage() {
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
                 Eternal Exchange now focuses on what happens after approval: discovery, subscriptions, payments,
-                holdings, and secondary listings. Issuance and review workflows have been split into the dedicated
-                issuance portal.
+                holdings, and secondary listings. Issuer submission and admin review workflows now live in dedicated
+                issuer and admin apps.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -132,12 +132,12 @@ export function ProductLandingPage() {
           <div className="rounded-[2rem] border border-border bg-card p-6">
             <p className="text-sm font-medium text-muted-foreground">What is already local</p>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-foreground">
-              <li>Seeded admin, issuer, approved investor, and pending-KYC investor accounts.</li>
+              <li>Seeded investor accounts for exchange sign-in, plus separate issuer and admin portals.</li>
               <li>Mock OTP sign-in using `000000`.</li>
               <li>Optional investor signup with a real email and Resend-delivered OTP.</li>
               <li>Mock INR balances and payment settlement through the worker.</li>
               <li>Live company-share and real-estate inventory that was already approved upstream.</li>
-              <li>Issuance, owner verification, and admin review now live in the dedicated issuance portal.</li>
+              <li>Issuer submission, owner verification, and admin review now live outside the exchange UI.</li>
               <li>Optional Solana wallet binding without forcing wallet-first onboarding.</li>
             </ul>
           </div>
