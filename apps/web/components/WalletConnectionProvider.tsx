@@ -12,7 +12,7 @@ import {
 } from '@/lib/solana-network';
 
 const WalletModalProviderDynamic = dynamic(
-  () => import('@solana/wallet-adapter-react-ui').then(mod => mod.WalletModalProvider),
+  () => import('@/components/WalletModalProvider'),
   { ssr: false }
 );
 

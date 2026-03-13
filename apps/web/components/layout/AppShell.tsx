@@ -11,7 +11,7 @@ import { formatRole } from '@/features/product/lib/format';
 import { cn } from '@/lib/utils';
 
 const WalletMultiButton = dynamic(
-  () => import('@solana/wallet-adapter-react-ui').then((mod) => mod.WalletMultiButton),
+  () => import('@/components/WalletMultiButton'),
   { ssr: false }
 );
 

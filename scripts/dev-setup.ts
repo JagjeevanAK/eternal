@@ -208,6 +208,7 @@ try {
   await waitForRpc(LOCAL_RPC_URL, RPC_TIMEOUT_MS);
 
   console.log("Initializing platform config...");
+  await sleep(3000);
   await runCommand([bunBin, "run", "init:local"], PROGRAM_DIR);
 
   console.log("Seeding local demo data...");
