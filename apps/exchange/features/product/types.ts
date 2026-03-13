@@ -2,6 +2,8 @@ export type UserRole = "admin" | "issuer" | "investor";
 
 export type KycStatus = "not_started" | "pending" | "approved" | "rejected";
 
+export type VerificationRequestStatus = "pending" | "approved" | "rejected";
+
 export type AssetClass = "real_estate" | "company_share";
 
 export type PropertyStatus =
@@ -101,6 +103,51 @@ export interface PropertyDocument {
   url: string;
   updatedAt: string;
   property?: PropertySummary;
+}
+
+export interface VerificationAttachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+}
+
+export interface VerificationParty {
+  id: string;
+  fullName: string;
+  email: string;
+  city: string;
+}
+
+export interface VerificationReviewer {
+  id: string;
+  fullName: string;
+}
+
+export interface VerificationRequest {
+  id: string;
+  ownerUserId: string;
+  issuerId: string;
+  assetName: string;
+  assetCategory: string | null;
+  ownerNote: string | null;
+  reviewerNote: string | null;
+  status: VerificationRequestStatus;
+  submittedAt: string;
+  reviewedAt: string | null;
+  reviewerId: string | null;
+  attachments: VerificationAttachment[];
+  owner: VerificationParty | null;
+  issuer: VerificationParty | null;
+  reviewer: VerificationReviewer | null;
+}
+
+export interface VerificationIssuerOption {
+  id: string;
+  fullName: string;
+  email: string;
+  city: string;
 }
 
 export interface Listing {
@@ -293,4 +340,18 @@ export interface PropertyDetailResponse {
 
 export interface IssuerProjectsResponse {
   properties: PropertySummary[];
+}
+
+export interface VerificationOwnerResponse {
+  requests: VerificationRequest[];
+  issuers: VerificationIssuerOption[];
+}
+
+export interface IssuerVerificationRequestsResponse {
+  stats: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
+  requests: VerificationRequest[];
 }

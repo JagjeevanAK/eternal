@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Toaster } from "sonner";
-import { Analytics } from "@vercel/analytics/react";
-import '@solana/wallet-adapter-react-ui/styles.css';
+import GlobalOverlays from "./GlobalOverlays";
 import Providers from "./providers";
 
 const geistSans = localFont({
@@ -77,8 +75,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <Analytics />
-          <Toaster />
+          <GlobalOverlays />
           {children}
         </Providers>
       </body>

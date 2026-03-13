@@ -8,6 +8,7 @@ import type {
   PropertyProject,
   PublicUser,
   QueueJob,
+  VerificationRequest,
 } from "./domain";
 import { PublicKey } from "@solana/web3.js";
 import {
@@ -17,6 +18,7 @@ import {
   enqueueJob,
   getAvailableUnitsForListing,
   getHolding,
+  getVerificationAttachmentAbsolutePath,
   getPropertyById,
   getPropertyDocuments,
   getUserByToken,
@@ -25,10 +27,25 @@ import {
   readState,
   resetState,
   toPublicUser,
+  writeVerificationAttachmentFile,
   writeState,
 } from "./state";
 import { createListingOnChain, syncStateToChain } from "./chain";
 import { minimumPrimaryUnits } from "./investment";
+import {
+  approveVerificationRequest,
+  canAccessVerificationAttachment,
+  findVerificationAttachment,
+  formatVerificationRequest,
+  inferVerificationMimeType,
+  listIssuerVerificationRequests,
+  listOwnerVerificationRequests,
+  normalizeVerificationText,
+  rejectVerificationRequest,
+  requireVerificationText,
+  validateVerificationFiles,
+  VerificationError,
+} from "./verification";
 import { Resend } from "resend";
 
 const API_PORT = Number(process.env.PORT ?? "4000");
@@ -56,6 +73,35 @@ const noContent = () =>
   new Response(null, {
     status: 204,
     headers: {
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, OPTIONS",
+      "access-control-allow-headers": "content-type, authorization",
+    },
+  });
+
+const headerSafeFileName = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[^\x20-\x7E]+/g, " ")
+    .replace(/["\\]/g, "")
+    .replace(/\s+/g, " ")
+    .trim() || "document";
+
+const fileResponse = (
+  file: Blob,
+  {
+    fileName,
+    mimeType,
+  }: {
+    fileName: string;
+    mimeType: string;
+  },
+) =>
+  new Response(file, {
+    status: 200,
+    headers: {
+      "content-type": mimeType,
+      "content-disposition": `inline; filename="${headerSafeFileName(fileName)}"`,
       "access-control-allow-origin": "*",
       "access-control-allow-methods": "GET, POST, OPTIONS",
       "access-control-allow-headers": "content-type, authorization",
@@ -121,6 +167,13 @@ const formatProperty = (state: LocalState, property: PropertyProject) => {
       .length,
   };
 };
+
+const formatIssuerOption = (user: LocalState["users"][number]) => ({
+  id: user.id,
+  fullName: user.fullName,
+  email: user.email,
+  city: user.city,
+});
 
 const requireAuth = (request: Request) => {
   const state = readState();
@@ -958,6 +1011,333 @@ const server = Bun.serve({
 
       writeState(state);
       return json(201, { order, payment });
+    }
+
+    if (pathname === "/verification/requests" && request.method === "GET") {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "investor") {
+        return json(403, { error: "Investor access required." });
+      }
+
+      console.info("[verification-api] owner list", {
+        ownerUserId: auth.actor.user.id,
+        requestCount: auth.state.verificationRequests.filter((value) => value.ownerUserId === auth.actor.user.id)
+          .length,
+      });
+
+      return json(200, {
+        requests: listOwnerVerificationRequests(auth.state, auth.actor.user.id),
+        issuers: auth.state.users
+          .filter((value) => value.role === "issuer")
+          .map((value) => formatIssuerOption(value)),
+      });
+    }
+
+    if (pathname === "/verification/requests" && request.method === "POST") {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "investor") {
+        return json(403, { error: "Investor access required." });
+      }
+
+      try {
+        const formData = await request.formData();
+        const issuerId = requireVerificationText(
+          typeof formData.get("issuerId") === "string" ? String(formData.get("issuerId")) : null,
+          "Issuer",
+          120,
+        );
+        const assetName = requireVerificationText(
+          typeof formData.get("assetName") === "string" ? String(formData.get("assetName")) : null,
+          "Asset name",
+          120,
+        );
+        const assetCategory = normalizeVerificationText(
+          typeof formData.get("assetCategory") === "string"
+            ? String(formData.get("assetCategory"))
+            : null,
+          80,
+        );
+        const ownerNote = normalizeVerificationText(
+          typeof formData.get("ownerNote") === "string" ? String(formData.get("ownerNote")) : null,
+          600,
+        );
+        const attachments = formData
+          .getAll("documents")
+          .filter((value): value is File => value instanceof File);
+
+        console.info("[verification-api] owner submit received", {
+          ownerUserId: auth.actor.user.id,
+          issuerId,
+          assetName,
+          assetCategory,
+          ownerNoteLength: ownerNote?.length ?? 0,
+          attachments: attachments.map((value) => ({
+            name: value.name,
+            type: value.type,
+            size: value.size,
+          })),
+        });
+
+        validateVerificationFiles(
+          attachments.map((value) => ({
+            name: value.name,
+            type: value.type,
+            size: value.size,
+          })),
+        );
+
+        const issuer = auth.state.users.find((value) => value.id === issuerId && value.role === "issuer");
+        if (!issuer) {
+          return json(400, { error: "Select a valid issuer." });
+        }
+
+        const verificationRequest: VerificationRequest = {
+          id: `verification_${crypto.randomUUID().slice(0, 8)}`,
+          ownerUserId: auth.actor.user.id,
+          issuerId,
+          assetName,
+          assetCategory,
+          ownerNote,
+          reviewerNote: null,
+          status: "pending",
+          submittedAt: new Date().toISOString(),
+          reviewedAt: null,
+          reviewerId: null,
+          attachments: [],
+        };
+
+        for (const file of attachments) {
+          const attachmentId = `verification_file_${crypto.randomUUID().slice(0, 8)}`;
+          const mimeType = inferVerificationMimeType(file.name, file.type);
+          const storagePath = writeVerificationAttachmentFile(
+            verificationRequest.id,
+            attachmentId,
+            file.name,
+            new Uint8Array(await file.arrayBuffer()),
+          );
+
+          verificationRequest.attachments.push({
+            id: attachmentId,
+            name: file.name,
+            mimeType,
+            sizeBytes: file.size,
+            uploadedAt: new Date().toISOString(),
+            storagePath,
+          });
+        }
+
+        auth.state.verificationRequests.unshift(verificationRequest);
+        writeState(auth.state);
+
+        console.info("[verification-api] owner submit stored", {
+          requestId: verificationRequest.id,
+          ownerUserId: verificationRequest.ownerUserId,
+          issuerId: verificationRequest.issuerId,
+          attachmentCount: verificationRequest.attachments.length,
+        });
+
+        return json(201, {
+          request: formatVerificationRequest(auth.state, verificationRequest),
+        });
+      } catch (error) {
+        if (error instanceof VerificationError) {
+          console.error("[verification-api] owner submit validation error", {
+            ownerUserId: auth.actor.user.id,
+            error: error.message,
+            status: error.status,
+          });
+          return json(error.status, { error: error.message });
+        }
+
+        console.error("[verification-api] owner submit unexpected error", error);
+        throw error;
+      }
+    }
+
+    if (pathname.startsWith("/verification/files/") && request.method === "GET") {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      const attachmentId = pathname.replace("/verification/files/", "");
+      const match = findVerificationAttachment(auth.state, attachmentId);
+      if (!match) {
+        console.error("[verification-api] file lookup failed", {
+          actorUserId: auth.actor.user.id,
+          attachmentId,
+        });
+        return json(404, { error: "Verification document not found." });
+      }
+
+      if (!canAccessVerificationAttachment(match.request, auth.actor.user.id)) {
+        console.error("[verification-api] file access denied", {
+          actorUserId: auth.actor.user.id,
+          attachmentId,
+          requestId: match.request.id,
+        });
+        return json(403, { error: "You do not have access to this document." });
+      }
+
+      try {
+        const absolutePath = getVerificationAttachmentAbsolutePath(match.attachment.storagePath);
+        const file = Bun.file(absolutePath);
+        if (!(await file.exists())) {
+          console.error("[verification-api] file missing on disk", {
+            actorUserId: auth.actor.user.id,
+            attachmentId,
+            requestId: match.request.id,
+            storagePath: match.attachment.storagePath,
+          });
+          return json(404, { error: "Verification document file not found." });
+        }
+
+        console.info("[verification-api] file open success", {
+          actorUserId: auth.actor.user.id,
+          attachmentId,
+          requestId: match.request.id,
+          fileName: match.attachment.name,
+        });
+
+        return fileResponse(file, {
+          fileName: match.attachment.name,
+          mimeType: match.attachment.mimeType,
+        });
+      } catch (error) {
+        console.error("[verification-api] file open unexpected error", {
+          actorUserId: auth.actor.user.id,
+          attachmentId,
+          error,
+        });
+        return json(404, { error: "Verification document file not found." });
+      }
+    }
+
+    if (pathname === "/issuer/verification/requests" && request.method === "GET") {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "issuer") {
+        return json(403, { error: "Issuer access required." });
+      }
+
+      console.info("[verification-api] issuer list", {
+        issuerUserId: auth.actor.user.id,
+        requestCount: auth.state.verificationRequests.filter((value) => value.issuerId === auth.actor.user.id)
+          .length,
+      });
+
+      return json(200, listIssuerVerificationRequests(auth.state, auth.actor.user.id));
+    }
+
+    if (
+      pathname.startsWith("/issuer/verification/requests/") &&
+      pathname.endsWith("/approve") &&
+      request.method === "POST"
+    ) {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "issuer") {
+        return json(403, { error: "Issuer access required." });
+      }
+
+      const requestId = pathname.replace("/issuer/verification/requests/", "").replace("/approve", "");
+      const body = await parseJson<{ reviewerNote?: string }>(request);
+
+      try {
+        console.info("[verification-api] issuer approve received", {
+          issuerUserId: auth.actor.user.id,
+          requestId,
+          reviewerNoteLength: body?.reviewerNote?.trim().length ?? 0,
+        });
+        const reviewedRequest = approveVerificationRequest(
+          auth.state,
+          requestId,
+          auth.actor.user.id,
+          body?.reviewerNote ?? null,
+        );
+        writeState(auth.state);
+
+        return json(200, {
+          request: formatVerificationRequest(auth.state, reviewedRequest),
+        });
+      } catch (error) {
+        if (error instanceof VerificationError) {
+          console.error("[verification-api] issuer approve validation error", {
+            issuerUserId: auth.actor.user.id,
+            requestId,
+            error: error.message,
+            status: error.status,
+          });
+          return json(error.status, { error: error.message });
+        }
+
+        console.error("[verification-api] issuer approve unexpected error", error);
+        throw error;
+      }
+    }
+
+    if (
+      pathname.startsWith("/issuer/verification/requests/") &&
+      pathname.endsWith("/reject") &&
+      request.method === "POST"
+    ) {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "issuer") {
+        return json(403, { error: "Issuer access required." });
+      }
+
+      const requestId = pathname.replace("/issuer/verification/requests/", "").replace("/reject", "");
+      const body = await parseJson<{ reviewerNote?: string }>(request);
+
+      try {
+        console.info("[verification-api] issuer reject received", {
+          issuerUserId: auth.actor.user.id,
+          requestId,
+          reviewerNoteLength: body?.reviewerNote?.trim().length ?? 0,
+        });
+        const reviewedRequest = rejectVerificationRequest(
+          auth.state,
+          requestId,
+          auth.actor.user.id,
+          body?.reviewerNote ?? null,
+        );
+        writeState(auth.state);
+
+        return json(200, {
+          request: formatVerificationRequest(auth.state, reviewedRequest),
+        });
+      } catch (error) {
+        if (error instanceof VerificationError) {
+          console.error("[verification-api] issuer reject validation error", {
+            issuerUserId: auth.actor.user.id,
+            requestId,
+            error: error.message,
+            status: error.status,
+          });
+          return json(error.status, { error: error.message });
+        }
+
+        console.error("[verification-api] issuer reject unexpected error", error);
+        throw error;
+      }
     }
 
     if (pathname === "/documents" && request.method === "GET") {

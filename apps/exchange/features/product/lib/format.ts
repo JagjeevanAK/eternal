@@ -1,3 +1,17 @@
+const PRODUCT_TIME_ZONE = "Asia/Kolkata";
+
+export const formatFileSize = (value: number) => {
+  if (value >= 1024 * 1024) {
+    return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  if (value >= 1024) {
+    return `${Math.round(value / 1024)} KB`;
+  }
+
+  return `${value} B`;
+};
+
 export const formatInr = (value: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -11,6 +25,7 @@ export const formatDate = (value: string | null) =>
   value
     ? new Intl.DateTimeFormat("en-IN", {
         dateStyle: "medium",
+        timeZone: PRODUCT_TIME_ZONE,
       }).format(new Date(value))
     : "Not available";
 

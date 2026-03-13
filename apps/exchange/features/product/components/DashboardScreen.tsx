@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { apiFetch } from "@/lib/product-api";
 import { AuthGate } from "@/features/product/components/AuthGate";
 import { StatusBadge } from "@/features/product/components/StatusBadge";
@@ -12,8 +11,7 @@ import { formatInr } from "@/features/product/lib/format";
 import type { DashboardResponse } from "@/features/product/types";
 
 export function DashboardScreen() {
-  const { publicKey } = useWallet();
-  const { bindWallet, refreshSession, token, user } = useSession();
+  const { token, user } = useSession();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,21 +34,6 @@ export function DashboardScreen() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  const handleBindWallet = async () => {
-    if (!publicKey) {
-      toast.error("Connect a wallet first.");
-      return;
-    }
-
-    try {
-      await bindWallet(publicKey.toBase58());
-      await refreshSession();
-      toast.success("Wallet bound to the local account.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to bind wallet.");
-    }
-  };
 
   return (
     <AuthGate>
@@ -112,12 +95,9 @@ export function DashboardScreen() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   External wallet: {user?.externalWalletAddress ?? "Not bound yet"}
                 </p>
-                <button
-                  onClick={handleBindWallet}
-                  className="mt-4 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-card"
-                >
-                  {publicKey ? "Bind connected wallet" : "Connect wallet, then bind"}
-                </button>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Wallet connection is disabled in the local UI workspace.
+                </p>
               </div>
             </section>
 

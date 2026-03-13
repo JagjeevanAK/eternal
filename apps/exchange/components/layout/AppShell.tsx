@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NetworkBadge } from '@/components/layout/NetworkBadge';
@@ -9,11 +8,6 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useSession } from '@/features/product/context/SessionContext';
 import { formatRole } from '@/features/product/lib/format';
 import { cn } from '@/lib/utils';
-
-const WalletMultiButton = dynamic(
-  () => import('@/components/WalletMultiButton'),
-  { ssr: false }
-);
 
 interface AppShellProps {
   children: ReactNode;
@@ -59,6 +53,12 @@ export function AppShell({ children }: AppShellProps) {
       matches: (value: string) => value === '/payments',
     },
     {
+      href: '/verification',
+      label: 'Verification',
+      hidden: user?.role !== 'investor',
+      matches: (value: string) => value === '/verification',
+    },
+    {
       href: '/documents',
       label: 'Documents',
       hidden: !user,
@@ -69,6 +69,12 @@ export function AppShell({ children }: AppShellProps) {
       label: 'Issuer',
       hidden: user?.role !== 'issuer',
       matches: (value: string) => value === '/issuer',
+    },
+    {
+      href: '/issuer/review',
+      label: 'Issuer Review',
+      hidden: user?.role !== 'issuer',
+      matches: (value: string) => value === '/issuer/review',
     },
     {
       href: '/admin',
@@ -124,7 +130,13 @@ export function AppShell({ children }: AppShellProps) {
               </>
             ) : null}
             <ThemeToggle />
-            <WalletMultiButton className="rounded-lg! border! border-border! bg-background! text-sm! text-foreground!" />
+            <button
+              type="button"
+              disabled
+              className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-muted-foreground"
+            >
+              Wallet unavailable
+            </button>
             {user ? (
               <>
                 <div className="rounded-lg border border-border bg-background px-3 py-2 text-right">

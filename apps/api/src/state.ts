@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import type {
   Holding,
@@ -10,12 +10,15 @@ import type {
   PublicUser,
   QueueJob,
   User,
+  VerificationRequest,
 } from "./domain";
 import { getManagedWalletAddress } from "./wallets";
 
 const ROOT_DIR = path.resolve(import.meta.dir, "../../..");
 const STORAGE_DIR = path.join(ROOT_DIR, ".eternal-local");
 const STATE_PATH = path.join(STORAGE_DIR, "state.json");
+const UPLOADS_DIR = path.join(STORAGE_DIR, "uploads");
+const VERIFICATION_UPLOAD_DIR = path.join(UPLOADS_DIR, "verification");
 
 const nowIso = () => new Date().toISOString();
 
@@ -390,6 +393,7 @@ const createSeedState = (): LocalState => {
     kycRecords,
     properties,
     propertyDocuments,
+    verificationRequests: [],
     holdings,
     orders: [
       {
@@ -620,6 +624,26 @@ const ensureStorageDir = () => {
   }
 };
 
+const ensureVerificationUploadDir = (requestId?: string) => {
+  const target = requestId ? path.join(VERIFICATION_UPLOAD_DIR, requestId) : VERIFICATION_UPLOAD_DIR;
+  if (!existsSync(target)) {
+    mkdirSync(target, { recursive: true });
+  }
+
+  return target;
+};
+
+const sanitizeFileName = (value: string) => {
+  const normalized = path
+    .basename(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return normalized || "document";
+};
+
 const normalizeState = (state: LocalState): LocalState => ({
   ...state,
   users: state.users.map((value) => ({
@@ -636,6 +660,18 @@ const normalizeState = (state: LocalState): LocalState => ({
     approvalSignature: value.approvalSignature ?? null,
     publicationSignature: value.publicationSignature ?? null,
     lastChainSyncAt: value.lastChainSyncAt ?? null,
+  })),
+  verificationRequests: (state.verificationRequests ?? []).map((value): VerificationRequest => ({
+    ...value,
+    assetCategory: value.assetCategory ?? null,
+    ownerNote: value.ownerNote ?? null,
+    reviewerNote: value.reviewerNote ?? null,
+    reviewedAt: value.reviewedAt ?? null,
+    reviewerId: value.reviewerId ?? null,
+    attachments: (value.attachments ?? []).map((attachment) => ({
+      ...attachment,
+      storagePath: attachment.storagePath ?? "",
+    })),
   })),
   holdings: state.holdings.map((value) => ({
     ...value,
@@ -703,6 +739,7 @@ export const mutateState = <T>(mutator: (state: LocalState) => T): T => {
 };
 
 export const resetState = () => {
+  rmSync(UPLOADS_DIR, { recursive: true, force: true });
   writeState(normalizeState(createSeedState()));
 };
 
@@ -829,3 +866,28 @@ export const listDemoUsers = (state: LocalState) =>
       phone: value.phone,
       kycStatus: value.kycStatus,
     }));
+
+export const writeVerificationAttachmentFile = (
+  requestId: string,
+  attachmentId: string,
+  fileName: string,
+  bytes: Uint8Array,
+) => {
+  ensureStorageDir();
+  ensureVerificationUploadDir(requestId);
+
+  const storedFileName = `${attachmentId}-${sanitizeFileName(fileName)}`;
+  const relativePath = path.join("verification", requestId, storedFileName);
+  writeFileSync(path.join(UPLOADS_DIR, relativePath), bytes);
+
+  return relativePath;
+};
+
+export const getVerificationAttachmentAbsolutePath = (storagePath: string) => {
+  const absolutePath = path.resolve(UPLOADS_DIR, storagePath);
+  if (!absolutePath.startsWith(UPLOADS_DIR)) {
+    throw new Error("Invalid verification attachment path.");
+  }
+
+  return absolutePath;
+};

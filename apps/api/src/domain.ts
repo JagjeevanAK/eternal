@@ -2,6 +2,8 @@ export type UserRole = "admin" | "issuer" | "investor";
 
 export type KycStatus = "not_started" | "pending" | "approved" | "rejected";
 
+export type VerificationRequestStatus = "pending" | "approved" | "rejected";
+
 export type AssetClass = "real_estate" | "company_share";
 
 export type PropertyStatus =
@@ -78,6 +80,30 @@ export interface PropertyDocument {
   source: "issuer" | "legal" | "compliance";
   url: string;
   updatedAt: string;
+}
+
+export interface VerificationAttachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+  storagePath: string;
+}
+
+export interface VerificationRequest {
+  id: string;
+  ownerUserId: string;
+  issuerId: string;
+  assetName: string;
+  assetCategory: string | null;
+  ownerNote: string | null;
+  reviewerNote: string | null;
+  status: VerificationRequestStatus;
+  submittedAt: string;
+  reviewedAt: string | null;
+  reviewerId: string | null;
+  attachments: VerificationAttachment[];
 }
 
 export interface PropertyProject {
@@ -240,6 +266,7 @@ export interface LocalState {
   kycRecords: KycRecord[];
   properties: PropertyProject[];
   propertyDocuments: PropertyDocument[];
+  verificationRequests: VerificationRequest[];
   holdings: Holding[];
   orders: Order[];
   payments: PaymentIntent[];
