@@ -18,7 +18,15 @@ interface SessionContextValue {
   user: SessionUser | null;
   loading: boolean;
   demoUsers: DemoUser[];
-  requestOtp: (identifier: string) => Promise<{ challengeId: string; destination: string; codeHint: string }>;
+  requestOtp: (
+    identifier: string,
+  ) => Promise<{
+    challengeId: string;
+    destination: string;
+    codeHint: string;
+    deliveryMode: "email" | "local";
+  }>;
+  signup: (fullName: string, email: string) => Promise<{ created: boolean; user: SessionUser }>;
   loginWithOtp: (identifier: string, code: string) => Promise<SessionUser>;
   refreshSession: () => Promise<void>;
   logout: () => Promise<void>;
@@ -77,9 +85,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [refreshSession]);
 
   const requestOtp = useCallback(async (identifier: string) => {
-    return apiFetch<{ challengeId: string; destination: string; codeHint: string }>("/auth/otp", {
+    return apiFetch<{
+      challengeId: string;
+      destination: string;
+      codeHint: string;
+      deliveryMode: "email" | "local";
+    }>("/auth/otp", { method: "POST", body: { identifier } });
+  }, []);
+
+  const signup = useCallback(async (fullName: string, email: string) => {
+    return apiFetch<{ created: boolean; user: SessionUser }>("/auth/signup", {
       method: "POST",
-      body: { identifier },
+      body: { fullName, email },
     });
   }, []);
 
@@ -140,12 +157,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       loading,
       demoUsers,
       requestOtp,
+      signup,
       loginWithOtp,
       refreshSession,
       logout,
       bindWallet,
     }),
-    [bindWallet, demoUsers, loading, loginWithOtp, logout, refreshSession, requestOtp, token, user],
+    [
+      bindWallet,
+      demoUsers,
+      loading,
+      loginWithOtp,
+      logout,
+      refreshSession,
+      requestOtp,
+      signup,
+      token,
+      user,
+    ],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

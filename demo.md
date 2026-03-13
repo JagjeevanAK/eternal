@@ -10,7 +10,8 @@ That gives you:
 
 - seeded investors, issuer, and admin accounts
 - predictable INR balances, live assets, orders, and listings
-- optional wallet binding on localhost without forcing wallet-first onboarding
+- optional browser-wallet connection on localhost without forcing wallet-first onboarding
+- a stable offline-friendly auth path using seeded `@eternal.local` users and OTP `000000`
 
 ## Demo Roles
 
@@ -23,6 +24,22 @@ Use the seeded accounts:
 - `pending@eternal.local`: investor who still needs KYC
 
 The local OTP code is always `000000`.
+
+## Auth Modes
+
+Use one of these depending on who you are showing the product to:
+
+- Recommended demo path: use seeded `@eternal.local` users from `/login`. They do not need signup and always use OTP `000000`.
+- Optional real-email path: use the signup form on `/login`, create an investor account with a non-`@eternal.local` email, then use the emailed OTP to sign in.
+
+If you want to demo the real-email path, make sure these environment variables are set before starting the stack:
+
+```bash
+RESEND_API_KEY=<your_resend_api_key>
+RESEND_FROM_EMAIL="Eternal <your-verified-sender@your-domain.com>"
+```
+
+`RESEND_FROM_EMAIL` must be a sender address already verified in Resend. If you do not need live email delivery during the demo, skip this and use the seeded local accounts instead.
 
 ## One-Time Setup
 
@@ -121,6 +138,16 @@ bun run dev:web:local
 
 Open `http://localhost:3000`.
 
+## Best Path For Live Demos
+
+If the goal is a smooth demo for judges, investors, or teammates:
+
+1. Use the seeded `@eternal.local` accounts.
+2. Log in with OTP `000000`.
+3. Avoid relying on inbox delivery unless you specifically want to show signup plus email OTP.
+
+This keeps the demo independent from Resend inbox latency, spam filtering, or sender-domain issues.
+
 ## Demo Story
 
 Use this order:
@@ -151,19 +178,30 @@ Use this order:
    - `/payments`
    - `/portfolio`
    all update correctly.
-19. Optional close: connect Phantom on localnet and bind the wallet from `/dashboard`.
+19. Optional close: connect Phantom on localnet and show the wallet connection UI from `/dashboard`.
+20. Skip the bind-wallet action in the live demo for now. The core issuer, admin, KYC, order, payment, settlement, and portfolio flows are the stable end-to-end path.
+
+## Optional Real-Email Auth Detour
+
+If you want to explicitly show signup and live OTP email delivery, do this before step 2 in the main story:
+
+1. Open `/login`.
+2. In the signup panel, create a new investor account with a real email address.
+3. Show that the app sends an OTP through Resend.
+4. Enter the emailed code and land in the investor flow.
+5. Switch back to the seeded `@eternal.local` users for the main end-to-end story.
 
 ## Fast Recovery Steps
 
 If the demo state gets messy:
 
-1. Stop `bun dev`.
+1. Keep `bun dev` running so the local API and validator stay available.
 2. Reset the local API state:
    `curl -X POST http://127.0.0.1:4000/reset`
 3. Re-seed the demo state:
    `bun run seed:demo`
-4. Restart `bun dev`.
-5. Refresh the browser and sign in again.
+4. Refresh the browser and sign in again.
+5. If any service has actually crashed, stop `bun dev`, start it again, and then refresh the browser.
 
 ## Devnet Backup Plan
 

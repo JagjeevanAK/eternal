@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useSession } from "@/features/product/context/SessionContext";
 import { formatRole } from "@/features/product/lib/format";
+import { apiFetch } from "@/lib/product-api";
+import type { SessionUser } from "@/features/product/types";
 
 const nextRouteForRole = (role: "admin" | "issuer" | "investor") => {
   if (role === "admin") {
@@ -24,7 +26,10 @@ export function LoginScreen() {
   const { demoUsers, loginWithOtp, requestOtp, user } = useSession();
   const [identifier, setIdentifier] = useState("");
   const [challengeSent, setChallengeSent] = useState(false);
-  const [code, setCode] = useState("000000");
+  const [code, setCode] = useState("");
+  const [codeHint, setCodeHint] = useState<string | null>(null);
+  const [signupName, setSignupName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,20 +40,31 @@ export function LoginScreen() {
     router.replace(searchParams.get("next") ?? nextRouteForRole(user.role));
   }, [router, searchParams, user]);
 
+  const startOtp = async (value: string, successTitle?: string) => {
+    const response = await requestOtp(value.trim());
+    setIdentifier(value.trim());
+    setChallengeSent(true);
+    setCodeHint(response.codeHint);
+    setCode(response.deliveryMode === "local" ? "000000" : "");
+
+    toast.success(
+      successTitle ?? (response.deliveryMode === "local" ? "Local OTP ready." : "OTP sent."),
+      { description: response.codeHint },
+    );
+
+    return response;
+  };
+
   const handleRequestOtp = async () => {
-    if (!identifier) {
-      toast.error("Enter a demo email or phone number.");
+    if (!identifier.trim()) {
+      toast.error("Enter your email or a seeded demo phone number.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await requestOtp(identifier);
-      setChallengeSent(true);
-      toast.success("OTP sent in local mode.", {
-        description: `${response.destination} is ready. Use 000000 to continue.`,
-      });
+      await startOtp(identifier);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to start OTP flow.");
     } finally {
@@ -56,8 +72,37 @@ export function LoginScreen() {
     }
   };
 
+  const handleSignup = async () => {
+    if (!signupName.trim() || !signupEmail.trim()) {
+      toast.error("Full name and email are required.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await apiFetch<{ created: boolean; user: SessionUser }>("/auth/signup", {
+        method: "POST",
+        body: {
+          fullName: signupName,
+          email: signupEmail,
+        },
+      });
+      await startOtp(
+        response.user.email,
+        response.created ? "Account created. OTP sent." : "Account already exists. OTP sent.",
+      );
+      setSignupName("");
+      setSignupEmail("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create your account.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerify = async () => {
-    if (!identifier || !code) {
+    if (!identifier.trim() || !code.trim()) {
       toast.error("Identifier and OTP are required.");
       return;
     }
@@ -78,6 +123,8 @@ export function LoginScreen() {
   const handleQuickLogin = async (value: string) => {
     setIdentifier(value);
     setChallengeSent(true);
+    setCode("000000");
+    setCodeHint("Use 000000 for seeded @eternal.local accounts.");
     setLoading(true);
 
     try {
@@ -95,14 +142,14 @@ export function LoginScreen() {
     <div className="mx-auto grid max-w-6xl gap-8 px-6 py-16 lg:grid-cols-[0.9fr,1.1fr]">
       <section className="rounded-[2rem] border border-border bg-card p-8">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Local OTP access
+          Sign in
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-foreground">
-          Sign in with seeded demo accounts.
+          Email OTP for registered users, `000000` for seeded local accounts.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          This local product stack uses mock OTP delivery. Request an OTP, then enter `000000`
-          to open the investor, issuer, or admin workspace.
+          Use a registered email to receive a 6-digit OTP over Resend. Seeded `@eternal.local`
+          users do not need signup and can continue with `000000`.
         </p>
 
         <div className="mt-8 space-y-4">
@@ -111,12 +158,12 @@ export function LoginScreen() {
             <input
               value={identifier}
               onChange={(event) => setIdentifier(event.target.value)}
-              placeholder="admin@eternal.local"
+              placeholder="name@example.com or +91 90000 00001"
               className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-ring"
             />
           </label>
 
-          {challengeSent && (
+          {challengeSent ? (
             <label className="block text-sm font-medium text-muted-foreground">
               OTP code
               <input
@@ -126,7 +173,13 @@ export function LoginScreen() {
                 className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-ring"
               />
             </label>
-          )}
+          ) : null}
+
+          {codeHint ? (
+            <p className="rounded-2xl border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+              {codeHint}
+            </p>
+          ) : null}
 
           <div className="flex flex-wrap gap-3">
             <button
@@ -147,7 +200,48 @@ export function LoginScreen() {
         </div>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-6">
+        <div id="signup" className="rounded-[1.75rem] border border-border bg-card p-6">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Sign up
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold text-foreground">Create a real-email investor account</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Signup is only for non-`@eternal.local` email addresses. After signup, the app sends an
+            OTP and drops you back into the sign-in flow.
+          </p>
+
+          <div className="mt-6 space-y-4">
+            <label className="block text-sm font-medium text-muted-foreground">
+              Full name
+              <input
+                value={signupName}
+                onChange={(event) => setSignupName(event.target.value)}
+                placeholder="Rohan Shah"
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-ring"
+              />
+            </label>
+
+            <label className="block text-sm font-medium text-muted-foreground">
+              Email
+              <input
+                value={signupEmail}
+                onChange={(event) => setSignupEmail(event.target.value)}
+                placeholder="name@example.com"
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-ring"
+              />
+            </label>
+
+            <button
+              onClick={handleSignup}
+              disabled={loading}
+              className="rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              Create account
+            </button>
+          </div>
+        </div>
+
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
             Seeded users

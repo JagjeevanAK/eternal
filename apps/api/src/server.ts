@@ -9,8 +9,10 @@ import type {
   PublicUser,
   QueueJob,
 } from "./domain";
+import { PublicKey } from "@solana/web3.js";
 import {
   addNotification,
+  createRegisteredInvestor,
   ensureStateFile,
   enqueueJob,
   getAvailableUnitsForListing,
@@ -31,6 +33,9 @@ import { Resend } from "resend";
 const API_PORT = Number(process.env.PORT ?? "4000");
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
+const RESEND_FROM_EMAIL =
+  process.env.RESEND_FROM_EMAIL ?? "Eternal <onboarding@updates.jagjeevan.me>";
+const LOCAL_EMAIL_DOMAIN = "@eternal.local";
 
 type JsonValue = Record<string, unknown> | unknown[] | string | number | boolean | null;
 
@@ -63,6 +68,20 @@ const parseJson = async <T>(request: Request) => {
     return null;
   }
 };
+
+const normalizeIdentifier = (value: string) => {
+  const trimmed = value.trim();
+  return trimmed.includes("@") ? trimmed.toLowerCase() : trimmed;
+};
+
+const isEmailIdentifier = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+const isLocalDemoEmail = (value: string) => value.endsWith(LOCAL_EMAIL_DOMAIN);
+
+const getAccountByIdentifier = (state: LocalState, identifier: string) =>
+  state.users.find(
+    (value) => value.email.toLowerCase() === identifier || value.phone === identifier,
+  );
 
 const assetClassLabel = (assetClass: AssetClass) =>
   assetClass === "company_share" ? "Company shares" : "Real estate";
@@ -283,41 +302,81 @@ const server = Bun.serve({
       return json(200, { ok: true });
     }
 
+    if (pathname === "/auth/signup" && request.method === "POST") {
+      const body = await parseJson<{ email?: string; fullName?: string }>(request);
+      const email = normalizeIdentifier(body?.email ?? "");
+      const fullName = body?.fullName?.trim() ?? "";
+
+      if (!email || !fullName) {
+        return json(400, { error: "Full name and email are required." });
+      }
+
+      if (!isEmailIdentifier(email)) {
+        return json(400, { error: "Enter a valid email address." });
+      }
+
+      if (isLocalDemoEmail(email)) {
+        return json(400, {
+          error: "Seeded @eternal.local accounts do not need signup. Use OTP 000000 to log in.",
+        });
+      }
+
+      const state = readState();
+      const existingAccount = getAccountByIdentifier(state, email);
+      const created = !existingAccount;
+      const account = existingAccount ?? createRegisteredInvestor(state, fullName, email);
+
+      if (!existingAccount) {
+        writeState(state);
+      }
+
+      return json(created ? 201 : 200, {
+        created,
+        user: toPublicUser(account),
+      });
+    }
+
     if (pathname === "/auth/otp" && request.method === "POST") {
       const body = await parseJson<{ identifier?: string }>(request);
-      if (!body?.identifier) {
+      const identifier = normalizeIdentifier(body?.identifier ?? "");
+
+      if (!identifier) {
         return json(400, { error: "Identifier is required." });
       }
 
       const state = readState();
-      const account = state.users.find(
-        (value) => value.email === body.identifier || value.phone === body.identifier,
-      );
+      const account = getAccountByIdentifier(state, identifier);
 
       if (!account) {
-        return json(404, { error: "No demo account matches that identifier." });
+        return json(404, {
+          error: isEmailIdentifier(identifier)
+            ? "Account not found. Sign up first, or use a seeded @eternal.local account."
+            : "No seeded demo account matches that identifier.",
+        });
       }
 
-      const isDummyAccount = account.email.endsWith("@eternal.local");
+      const isDummyAccount = isLocalDemoEmail(account.email.toLowerCase());
 
       if (isDummyAccount) {
         return json(200, {
           challengeId: `otp_${account.id}`,
-          destination: account.phone,
-          codeHint: "Use 000000 in local mode.",
+          destination: identifier,
+          codeHint: "Use 000000 for seeded @eternal.local accounts.",
+          deliveryMode: "local",
         });
       }
 
-      // Real account logic
+      if (!process.env.RESEND_API_KEY) {
+        return json(503, { error: "RESEND_API_KEY is not configured." });
+      }
+
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // Store OTP in state
       account.otpCode = otpCode;
       writeState(state);
 
       try {
         await resend.emails.send({
-          from: "Eternal <onboarding@updates.jagjeevan.me>",
+          from: RESEND_FROM_EMAIL,
           to: [account.email],
           subject: "Your Eternal Login Code",
           html: `<p>Your login code is <strong>${otpCode}</strong></p>`,
@@ -327,40 +386,43 @@ const server = Bun.serve({
           challengeId: `otp_${account.id}`,
           destination: account.email,
           codeHint: "We sent a 6-digit code to your email.",
+          deliveryMode: "email",
         });
       } catch (error) {
         console.error("Resend error:", error);
-        return json(500, { error: "Failed to send OTP email." });
+        return json(500, {
+          error: "Failed to send OTP email. Check your Resend API key and verified sender email.",
+        });
       }
     }
 
     if (pathname === "/auth/verify" && request.method === "POST") {
       const body = await parseJson<{ identifier?: string; code?: string }>(request);
-      if (!body?.identifier || !body.code) {
+      const identifier = normalizeIdentifier(body?.identifier ?? "");
+      const code = body?.code?.trim() ?? "";
+
+      if (!identifier || !code) {
         return json(400, { error: "Identifier and code are required." });
       }
 
       const state = readState();
-      const account = state.users.find(
-        (value) => value.email === body.identifier || value.phone === body.identifier,
-      );
+      const account = getAccountByIdentifier(state, identifier);
 
       if (!account) {
         return json(404, { error: "Account not found." });
       }
 
-      const isDummyAccount = account.email.endsWith("@eternal.local");
+      const isDummyAccount = isLocalDemoEmail(account.email.toLowerCase());
 
       if (isDummyAccount) {
-        if (body.code !== "000000") {
+        if (code !== "000000") {
           return json(400, { error: "Local mode accepts only 000000." });
         }
       } else {
-        if (body.code !== account.otpCode) {
+        if (code !== account.otpCode) {
           return json(400, { error: "Invalid or expired OTP code." });
         }
 
-        // Clear OTP after successful login
         account.otpCode = undefined;
       }
 
@@ -545,9 +607,16 @@ const server = Bun.serve({
         return json(400, { error: "Wallet address is required." });
       }
 
+      let normalizedAddress: string;
+      try {
+        normalizedAddress = new PublicKey(body.address.trim()).toBase58();
+      } catch {
+        return json(400, { error: "Enter a valid Solana wallet address." });
+      }
+
       const state = auth.state;
       const currentUser = state.users.find((value) => value.id === auth.actor?.user.id)!;
-      currentUser.externalWalletAddress = body.address;
+      currentUser.externalWalletAddress = normalizedAddress;
       addNotification(
         state,
         currentUser.id,

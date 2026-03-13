@@ -788,11 +788,44 @@ export const addNotification = (state: LocalState, userId: string, title: string
   return value;
 };
 
+export const createRegisteredInvestor = (
+  state: LocalState,
+  fullName: string,
+  email: string,
+): User => {
+  const existingUser = state.users.find((value) => value.email.toLowerCase() === email.toLowerCase());
+  if (existingUser) {
+    return existingUser;
+  }
+
+  const userId = makeId("user");
+  const account = user(
+    userId,
+    "investor",
+    fullName.trim(),
+    email.trim().toLowerCase(),
+    "",
+    "Unspecified",
+    getManagedWalletAddress(userId),
+    "not_started",
+    0,
+  );
+
+  state.users.push(account);
+  state.kycRecords.push(
+    kyc(userId, "not_started", "", "", "", "", "Self-registered account awaiting KYC"),
+  );
+
+  return account;
+};
+
 export const listDemoUsers = (state: LocalState) =>
-  state.users.map((value) => ({
-    identifier: value.email,
-    fullName: value.fullName,
-    role: value.role,
-    phone: value.phone,
-    kycStatus: value.kycStatus,
-  }));
+  state.users
+    .filter((value) => value.email.endsWith("@eternal.local"))
+    .map((value) => ({
+      identifier: value.email,
+      fullName: value.fullName,
+      role: value.role,
+      phone: value.phone,
+      kycStatus: value.kycStatus,
+    }));

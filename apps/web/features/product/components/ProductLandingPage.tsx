@@ -49,12 +49,29 @@ export function ProductLandingPage() {
             >
               Browse Marketplace
             </Link>
-            <Link
-              href={user ? "/dashboard" : "/login"}
-              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              {user ? "Open Workspace" : "Sign In"}
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                Open Workspace
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login#signup"
+                  className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-card"
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  href="/login"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  Sign In
+                </Link>
+              </>
+            )}
             <ThemeToggle />
           </div>
         </div>
@@ -84,6 +101,12 @@ export function ProductLandingPage() {
                 Explore live assets
               </Link>
               <Link
+                href="/login#signup"
+                className="rounded-2xl border border-border px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-card"
+              >
+                Create account
+              </Link>
+              <Link
                 href="/login"
                 className="rounded-2xl border border-border px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-card"
               >
@@ -111,6 +134,7 @@ export function ProductLandingPage() {
             <ul className="mt-4 space-y-3 text-sm leading-6 text-foreground">
               <li>Seeded admin, issuer, approved investor, and pending-KYC investor accounts.</li>
               <li>Mock OTP sign-in using `000000`.</li>
+              <li>Optional investor signup with a real email and Resend-delivered OTP.</li>
               <li>Mock INR balances and payment settlement through the worker.</li>
               <li>Live company-share and real-estate inventory plus issuer/admin review queues.</li>
               <li>Optional Solana wallet binding without forcing wallet-first onboarding.</li>

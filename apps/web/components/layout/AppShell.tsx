@@ -108,12 +108,20 @@ export function AppShell({ children }: AppShellProps) {
               );
             })}
             {!user ? (
-              <Link
-                href="/login"
-                className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Sign In
-              </Link>
+              <>
+                <Link
+                  href="/login#signup"
+                  className="rounded-lg border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-background"
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  href="/login"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  Sign In
+                </Link>
+              </>
             ) : null}
             <ThemeToggle />
             <WalletMultiButton className="rounded-lg! border! border-border! bg-background! text-sm! text-foreground!" />
