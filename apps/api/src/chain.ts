@@ -3,6 +3,7 @@ import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram } from 
 import idl from "../../../programs/asset-tokenization/target/idl/asset_tokenization.json";
 import type { AssetTokenization } from "../../../programs/asset-tokenization/target/types/asset_tokenization";
 import type { Holding, Listing, LocalState, Order, PropertyProject, Trade, User } from "./domain";
+import { meetsMinimumPrimaryInvestment } from "./investment";
 import { getAuthorityKeypair, getManagedWallet } from "./wallets";
 
 const COMMITMENT = "confirmed";
@@ -497,22 +498,34 @@ const syncHoldingRecord = async (state: LocalState, holding: Holding) => {
 
   let account = await fetchMaybe(authorityProgram().account.holdingPosition, address);
   const currentUnits = account ? toNumber(account.units) : 0;
+  const unitsToAllocate = holding.units - currentUnits;
 
-  if (holding.units > currentUnits) {
-    await authorityProgram()
-      .methods.allocatePrimary(new BN(holding.units - currentUnits))
-      .accountsStrict({
-        authority: getAuthority().publicKey,
-        platformConfig: platformPda(),
-        investor: investor.signer.publicKey,
-        investorRegistry: investor.address,
-        property: propertyContext.propertyAddress,
-        offering: propertyContext.offeringAddress,
-        holding: address,
-        systemProgram: SystemProgram.programId,
-      })
-      .rpc();
-    account = await authorityProgram().account.holdingPosition.fetch(address);
+  if (unitsToAllocate > 0) {
+    const unitPriceInrMinor = toNumber(propertyContext.offeringAccount.unitPriceInrMinor);
+    const minimumInvestmentInrMinor = toNumber(
+      propertyContext.offeringAccount.minimumInvestmentInrMinor,
+    );
+
+    if (!meetsMinimumPrimaryInvestment(unitsToAllocate, unitPriceInrMinor, minimumInvestmentInrMinor)) {
+      console.warn(
+        `[chain] Skipping holding sync for ${holding.id}: ${unitsToAllocate} units is below the minimum primary investment for ${property.slug}.`,
+      );
+    } else {
+      await authorityProgram()
+        .methods.allocatePrimary(new BN(unitsToAllocate))
+        .accountsStrict({
+          authority: getAuthority().publicKey,
+          platformConfig: platformPda(),
+          investor: investor.signer.publicKey,
+          investorRegistry: investor.address,
+          property: propertyContext.propertyAddress,
+          offering: propertyContext.offeringAddress,
+          holding: address,
+          systemProgram: SystemProgram.programId,
+        })
+        .rpc();
+      account = await authorityProgram().account.holdingPosition.fetch(address);
+    }
   }
 
   if (!account) {

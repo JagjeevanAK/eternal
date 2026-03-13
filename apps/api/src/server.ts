@@ -28,6 +28,7 @@ import {
   writeState,
 } from "./state";
 import { createListingOnChain, syncStateToChain } from "./chain";
+import { minimumPrimaryUnits } from "./investment";
 import { Resend } from "resend";
 
 const API_PORT = Number(process.env.PORT ?? "4000");
@@ -277,6 +278,17 @@ const syncChainReadModel = async (state: LocalState) => {
   return state;
 };
 
+const syncChainReadModelSafely = async (state: LocalState) => {
+  try {
+    return await syncChainReadModel(state);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Chain read-model sync failed. Using local snapshot. ${message}`);
+    writeState(state);
+    return state;
+  }
+};
+
 ensureStateFile();
 
 const server = Bun.serve({
@@ -466,7 +478,7 @@ const server = Bun.serve({
     }
 
     if ((pathname === "/properties" || pathname === "/assets") && request.method === "GET") {
-      const state = await syncChainReadModel(readState());
+      const state = await syncChainReadModelSafely(readState());
       return json(200, {
         properties: state.properties
           .filter((value) => value.status === "live")
@@ -481,7 +493,7 @@ const server = Bun.serve({
       const slug = pathname.startsWith("/assets/")
         ? pathname.replace("/assets/", "")
         : pathname.replace("/properties/", "");
-      const state = await syncChainReadModel(readState());
+      const state = await syncChainReadModelSafely(readState());
       const property = state.properties.find((value) => value.slug === slug);
       if (!property) {
         return json(404, { error: "Asset not found." });
@@ -634,7 +646,7 @@ const server = Bun.serve({
         return auth.error!;
       }
 
-      const state = await syncChainReadModel(auth.state);
+      const state = await syncChainReadModelSafely(auth.state);
       const summary = dashboardSummary(state, auth.actor.user.id);
       return json(200, summary ?? { error: "Dashboard unavailable." });
     }
@@ -645,7 +657,7 @@ const server = Bun.serve({
         return auth.error!;
       }
 
-      const state = await syncChainReadModel(auth.state);
+      const state = await syncChainReadModelSafely(auth.state);
 
       const holdings = state.holdings
         .filter((value) => value.userId === auth.actor?.user.id && value.units > 0)
@@ -806,6 +818,16 @@ const server = Bun.serve({
 
       if (body.units > property.availableUnits) {
         return json(400, { error: "Units requested exceed current chain availability." });
+      }
+
+      const minimumOrderUnits = minimumPrimaryUnits(
+        property.minimumInvestmentInrMinor,
+        property.unitPriceInrMinor,
+      );
+      if (minimumOrderUnits > 0 && body.units < minimumOrderUnits) {
+        return json(400, {
+          error: `Minimum primary order size is ${minimumOrderUnits} units for this asset.`,
+        });
       }
 
       const order = createPrimaryOrder(property, auth.actor.user.id, body.units, state.config.primaryFeeBps);
