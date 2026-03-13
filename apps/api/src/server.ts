@@ -26,9 +26,11 @@ import {
   writeState,
 } from "./state";
 import { createListingOnChain, syncStateToChain } from "./chain";
+import { Resend } from "resend";
 
 const API_PORT = Number(process.env.PORT ?? "4000");
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 
 type JsonValue = Record<string, unknown> | unknown[] | string | number | boolean | null;
 
@@ -296,21 +298,46 @@ const server = Bun.serve({
         return json(404, { error: "No demo account matches that identifier." });
       }
 
-      return json(200, {
-        challengeId: `otp_${account.id}`,
-        destination: account.phone,
-        codeHint: "Use 000000 in local mode.",
-      });
+      const isDummyAccount = account.email.endsWith("@eternal.local");
+
+      if (isDummyAccount) {
+        return json(200, {
+          challengeId: `otp_${account.id}`,
+          destination: account.phone,
+          codeHint: "Use 000000 in local mode.",
+        });
+      }
+
+      // Real account logic
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store OTP in state
+      account.otpCode = otpCode;
+      writeState(state);
+
+      try {
+        await resend.emails.send({
+          from: "Eternal <onboarding@updates.jagjeevan.me>",
+          to: [account.email],
+          subject: "Your Eternal Login Code",
+          html: `<p>Your login code is <strong>${otpCode}</strong></p>`,
+        });
+
+        return json(200, {
+          challengeId: `otp_${account.id}`,
+          destination: account.email,
+          codeHint: "We sent a 6-digit code to your email.",
+        });
+      } catch (error) {
+        console.error("Resend error:", error);
+        return json(500, { error: "Failed to send OTP email." });
+      }
     }
 
     if (pathname === "/auth/verify" && request.method === "POST") {
       const body = await parseJson<{ identifier?: string; code?: string }>(request);
       if (!body?.identifier || !body.code) {
         return json(400, { error: "Identifier and code are required." });
-      }
-
-      if (body.code !== "000000") {
-        return json(400, { error: "Local mode accepts only 000000." });
       }
 
       const state = readState();
@@ -320,6 +347,21 @@ const server = Bun.serve({
 
       if (!account) {
         return json(404, { error: "Account not found." });
+      }
+
+      const isDummyAccount = account.email.endsWith("@eternal.local");
+
+      if (isDummyAccount) {
+        if (body.code !== "000000") {
+          return json(400, { error: "Local mode accepts only 000000." });
+        }
+      } else {
+        if (body.code !== account.otpCode) {
+          return json(400, { error: "Invalid or expired OTP code." });
+        }
+
+        // Clear OTP after successful login
+        account.otpCode = undefined;
       }
 
       const session = {

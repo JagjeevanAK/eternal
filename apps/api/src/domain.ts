@@ -44,6 +44,7 @@ export interface User {
   externalWalletAddress: string | null;
   kycStatus: KycStatus;
   cashBalanceInrMinor: number;
+  otpCode?: string;
   createdAt: string;
 }
 
