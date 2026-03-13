@@ -21,9 +21,10 @@ export const metadata: Metadata = {
     template: "%s | Eternal",
   },
   description:
-    "A local-first tokenized asset marketplace for company-share and real-estate issues with browsing, issuance, and fixed-price trading flows.",
+    "A local-first tokenized asset exchange for browsing approved assets, placing fixed-price orders, and managing holdings.",
   keywords: [
     "asset tokenization",
+    "asset exchange",
     "company shares",
     "real estate investing",
     "Solana",
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Eternal",
     description:
-      "A local-first tokenized asset marketplace for company-share and real-estate issues with browsing, issuance, and fixed-price trading flows.",
+      "A local-first tokenized asset exchange for browsing approved assets, placing fixed-price orders, and managing holdings.",
     siteName: "Eternal",
     locale: "en_US",
     type: "website",
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Eternal",
     description:
-      "A local-first tokenized asset marketplace for company-share and real-estate issues with browsing, issuance, and fixed-price trading flows.",
+      "A local-first tokenized asset exchange for browsing approved assets, placing fixed-price orders, and managing holdings.",
   },
   icons: {
     icon: [

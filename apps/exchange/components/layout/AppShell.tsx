@@ -53,34 +53,10 @@ export function AppShell({ children }: AppShellProps) {
       matches: (value: string) => value === '/payments',
     },
     {
-      href: '/verification',
-      label: 'Verification',
-      hidden: user?.role !== 'investor',
-      matches: (value: string) => value === '/verification',
-    },
-    {
       href: '/documents',
       label: 'Documents',
       hidden: !user,
       matches: (value: string) => value === '/documents',
-    },
-    {
-      href: '/issuer',
-      label: 'Issuer',
-      hidden: user?.role !== 'issuer',
-      matches: (value: string) => value === '/issuer',
-    },
-    {
-      href: '/issuer/review',
-      label: 'Issuer Review',
-      hidden: user?.role !== 'issuer',
-      matches: (value: string) => value === '/issuer/review',
-    },
-    {
-      href: '/admin',
-      label: 'Admin',
-      hidden: user?.role !== 'admin',
-      matches: (value: string) => value === '/admin',
     },
   ].filter((item) => !item.hidden);
 

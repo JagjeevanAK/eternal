@@ -1,7 +1,10 @@
 'use client';
 
+import type { ComponentProps } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-export default function WalletMultiButtonWrapper(props: any) {
+type WalletMultiButtonWrapperProps = ComponentProps<typeof WalletMultiButton>;
+
+export default function WalletMultiButtonWrapper(props: WalletMultiButtonWrapperProps) {
   return <WalletMultiButton {...props} />;
 }

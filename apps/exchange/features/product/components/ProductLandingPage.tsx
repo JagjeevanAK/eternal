@@ -8,18 +8,18 @@ import { useSession } from "@/features/product/context/SessionContext";
 
 const highlights = [
   {
-    title: "Two live asset lanes",
-    description: "Browse company-share issuances and real-estate offerings from the same marketplace.",
+    title: "Approved inventory only",
+    description: "Browse the assets that have already cleared review and are ready for exchange-side discovery.",
     icon: Building2,
   },
   {
-    title: "Compliance-led access",
-    description: "KYC, issuer review, asset approvals, and controlled secondary listings are built into the flow.",
+    title: "Issuance kept separate",
+    description: "New submissions, owner verification, and admin review now live in the dedicated issuance portal.",
     icon: ShieldCheck,
   },
   {
     title: "Fixed-price trading",
-    description: "Primary issues and secondary listings are created at explicit INR prices instead of AMM-style pricing.",
+    description: "Primary subscriptions and secondary listings still run at explicit INR prices instead of AMM-style pricing.",
     icon: Landmark,
   },
   {
@@ -85,12 +85,12 @@ export function ProductLandingPage() {
             </div>
             <div className="space-y-4">
               <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-foreground md:text-6xl">
-                Tokenized company and real-estate issues with fixed-price trading on localhost.
+                Browse approved tokenized assets and trade them through a local fixed-price exchange.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-                Eternal now runs as a local asset marketplace where issuers can publish company-share or real-estate
-                offerings, investors can browse and buy them, and holders can resell positions through fixed-price
-                listings.
+                Eternal Exchange now focuses on what happens after approval: discovery, subscriptions, payments,
+                holdings, and secondary listings. Issuance and review workflows have been split into the dedicated
+                issuance portal.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -115,16 +115,16 @@ export function ProductLandingPage() {
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-3xl border border-border bg-card p-5">
-                <p className="text-sm text-muted-foreground">Investor flow</p>
-                <p className="mt-2 text-xl font-semibold text-foreground">Browse / Buy / Pay / Settle</p>
+                <p className="text-sm text-muted-foreground">Discovery flow</p>
+                <p className="mt-2 text-xl font-semibold text-foreground">Browse / Review / Subscribe</p>
               </div>
               <div className="rounded-3xl border border-border bg-card p-5">
-                <p className="text-sm text-muted-foreground">Issuer flow</p>
-                <p className="mt-2 text-xl font-semibold text-foreground">Issue / Review / Approve / Publish</p>
+                <p className="text-sm text-muted-foreground">Exchange flow</p>
+                <p className="mt-2 text-xl font-semibold text-foreground">Order / Pay / Settle</p>
               </div>
               <div className="rounded-3xl border border-border bg-card p-5">
-                <p className="text-sm text-muted-foreground">Market flow</p>
-                <p className="mt-2 text-xl font-semibold text-foreground">List / Buy / Trade at fixed price</p>
+                <p className="text-sm text-muted-foreground">Portfolio flow</p>
+                <p className="mt-2 text-xl font-semibold text-foreground">Hold / List / Trade at fixed price</p>
               </div>
             </div>
           </div>
@@ -136,7 +136,8 @@ export function ProductLandingPage() {
               <li>Mock OTP sign-in using `000000`.</li>
               <li>Optional investor signup with a real email and Resend-delivered OTP.</li>
               <li>Mock INR balances and payment settlement through the worker.</li>
-              <li>Live company-share and real-estate inventory plus issuer/admin review queues.</li>
+              <li>Live company-share and real-estate inventory that was already approved upstream.</li>
+              <li>Issuance, owner verification, and admin review now live in the dedicated issuance portal.</li>
               <li>Optional Solana wallet binding without forcing wallet-first onboarding.</li>
             </ul>
           </div>

@@ -9,14 +9,7 @@ import { apiFetch } from "@/lib/product-api";
 import type { SessionUser } from "@/features/product/types";
 
 const nextRouteForRole = (role: "admin" | "issuer" | "investor") => {
-  if (role === "admin") {
-    return "/admin";
-  }
-
-  if (role === "issuer") {
-    return "/issuer";
-  }
-
+  void role;
   return "/dashboard";
 };
 

@@ -29,7 +29,7 @@ export function AuthGate({ children, allowedRoles }: AuthGateProps) {
       <div className="rounded-3xl border border-border bg-card p-8">
         <h1 className="text-2xl font-semibold text-foreground">Sign in to continue</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          This part of Eternal runs on a local API with seeded users, issuer accounts, and admin queues.
+          This part of Eternal runs on a local API with seeded users, exchange workspaces, and local order queues.
         </p>
         <Link
           href={`/login?next=${encodeURIComponent(pathname)}`}

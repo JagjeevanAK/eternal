@@ -1,7 +1,7 @@
 {
   "name": "Eternal",
   "short_name": "Eternal",
-  "description": "Local-first asset marketplace for company-share and real-estate issues with browsing, issuance, and fixed-price trading.",
+  "description": "Local-first asset exchange for browsing approved tokenized assets and trading them at fixed prices.",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
