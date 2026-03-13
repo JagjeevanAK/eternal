@@ -1,5 +1,5 @@
-import { KycScreen } from "@/features/product/components/KycScreen";
+import { redirect } from "next/navigation";
 
 export default function KycPage() {
-  return <KycScreen />;
+  redirect("/dashboard");
 }

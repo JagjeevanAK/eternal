@@ -19,6 +19,7 @@ const STORAGE_DIR = path.join(ROOT_DIR, ".eternal-local");
 const STATE_PATH = path.join(STORAGE_DIR, "state.json");
 const UPLOADS_DIR = path.join(STORAGE_DIR, "uploads");
 const VERIFICATION_UPLOAD_DIR = path.join(UPLOADS_DIR, "verification");
+const PROPERTY_DOCUMENT_UPLOAD_DIR = path.join(UPLOADS_DIR, "property-documents");
 
 const nowIso = () => new Date().toISOString();
 
@@ -633,6 +634,17 @@ const ensureVerificationUploadDir = (requestId?: string) => {
   return target;
 };
 
+const ensurePropertyDocumentUploadDir = (propertyId?: string) => {
+  const target = propertyId
+    ? path.join(PROPERTY_DOCUMENT_UPLOAD_DIR, propertyId)
+    : PROPERTY_DOCUMENT_UPLOAD_DIR;
+  if (!existsSync(target)) {
+    mkdirSync(target, { recursive: true });
+  }
+
+  return target;
+};
+
 const sanitizeFileName = (value: string) => {
   const normalized = path
     .basename(value)
@@ -649,6 +661,13 @@ const normalizeState = (state: LocalState): LocalState => ({
   users: state.users.map((value) => ({
     ...value,
     managedWalletAddress: getManagedWalletAddress(value.id),
+  })),
+  propertyDocuments: state.propertyDocuments.map((value) => ({
+    ...value,
+    mimeType: value.mimeType ?? undefined,
+    sizeBytes: value.sizeBytes ?? undefined,
+    uploadedAt: value.uploadedAt ?? undefined,
+    storagePath: value.storagePath ?? undefined,
   })),
   properties: state.properties.map((value) => ({
     ...value,
@@ -883,10 +902,35 @@ export const writeVerificationAttachmentFile = (
   return relativePath;
 };
 
+export const writePropertyDocumentFile = (
+  propertyId: string,
+  documentId: string,
+  fileName: string,
+  bytes: Uint8Array,
+) => {
+  ensureStorageDir();
+  ensurePropertyDocumentUploadDir(propertyId);
+
+  const storedFileName = `${documentId}-${sanitizeFileName(fileName)}`;
+  const relativePath = path.join("property-documents", propertyId, storedFileName);
+  writeFileSync(path.join(UPLOADS_DIR, relativePath), bytes);
+
+  return relativePath;
+};
+
 export const getVerificationAttachmentAbsolutePath = (storagePath: string) => {
   const absolutePath = path.resolve(UPLOADS_DIR, storagePath);
   if (!absolutePath.startsWith(UPLOADS_DIR)) {
     throw new Error("Invalid verification attachment path.");
+  }
+
+  return absolutePath;
+};
+
+export const getPropertyDocumentAbsolutePath = (storagePath: string) => {
+  const absolutePath = path.resolve(UPLOADS_DIR, storagePath);
+  if (!absolutePath.startsWith(UPLOADS_DIR)) {
+    throw new Error("Invalid property document path.");
   }
 
   return absolutePath;

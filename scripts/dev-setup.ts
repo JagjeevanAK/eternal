@@ -4,10 +4,12 @@ const ROOT_DIR = process.cwd();
 const PROGRAM_DIR = `${ROOT_DIR}/programs/asset-tokenization`;
 const LOCAL_RPC_URL = "http://127.0.0.1:8899";
 const API_URL = "http://127.0.0.1:4000";
-const WEB_URL = "http://localhost:3000";
+const EXCHANGE_URL = "http://localhost:3000";
+const ISSUANCE_URL = "http://localhost:3001";
 const POLL_INTERVAL_MS = 500;
 const RPC_TIMEOUT_MS = 60_000;
 const API_TIMEOUT_MS = 20_000;
+const APP_TIMEOUT_MS = 60_000;
 
 type ExitResult = { code: number | null; signalCode: number | null };
 
@@ -167,10 +169,12 @@ const stopProcess = (proc: ReturnType<typeof Bun.spawn> | null) => {
 let validator: ReturnType<typeof Bun.spawn> | null = null;
 let api: ReturnType<typeof Bun.spawn> | null = null;
 let worker: ReturnType<typeof Bun.spawn> | null = null;
-let web: ReturnType<typeof Bun.spawn> | null = null;
+let exchange: ReturnType<typeof Bun.spawn> | null = null;
+let issuance: ReturnType<typeof Bun.spawn> | null = null;
 
 const cleanup = () => {
-  stopProcess(web);
+  stopProcess(issuance);
+  stopProcess(exchange);
   stopProcess(worker);
   stopProcess(api);
   stopProcess(validator);
@@ -216,11 +220,17 @@ try {
 
   await optionalAirdrop();
 
-  console.log(`Starting web app at ${WEB_URL}...`);
-  web = spawnLongRunning([bunBin, "run", "dev:web:local"], ROOT_DIR);
+  console.log(`Starting exchange app at ${EXCHANGE_URL}...`);
+  exchange = spawnLongRunning([bunBin, "run", "dev:web:local"], ROOT_DIR);
+  await waitForHttp(EXCHANGE_URL, APP_TIMEOUT_MS, exchange, "Exchange app");
+
+  console.log(`Starting issuance portal at ${ISSUANCE_URL}...`);
+  issuance = spawnLongRunning([bunBin, "run", "dev:issuance"], ROOT_DIR);
+  await waitForHttp(ISSUANCE_URL, APP_TIMEOUT_MS, issuance, "Issuance portal");
 
   console.log("Local demo is ready.");
-  console.log(`UI: ${WEB_URL}`);
+  console.log(`Exchange UI: ${EXCHANGE_URL}`);
+  console.log(`Issuance Portal: ${ISSUANCE_URL}`);
   console.log(`API: ${API_URL}`);
   console.log(`RPC: ${LOCAL_RPC_URL}`);
   console.log("Use Phantom on localnet for the easiest browser-wallet flow.");
@@ -231,8 +241,9 @@ try {
       : new Promise<"validator">(() => { });
   const apiExit = api.exited.then(() => "api" as const);
   const workerExit = worker.exited.then(() => "worker" as const);
-  const webExit = web.exited.then(() => "web" as const);
-  const winner = await Promise.race([validatorExit, apiExit, workerExit, webExit]);
+  const exchangeExit = exchange.exited.then(() => "exchange" as const);
+  const issuanceExit = issuance.exited.then(() => "issuance" as const);
+  const winner = await Promise.race([validatorExit, apiExit, workerExit, exchangeExit, issuanceExit]);
 
   cleanup();
 
@@ -254,9 +265,15 @@ try {
     );
   }
 
-  if (winner === "web") {
+  if (winner === "exchange") {
     throw new Error(
-      `Web app exited unexpectedly (${web.exitCode ?? web.signalCode ?? "unknown"}).`,
+      `Exchange app exited unexpectedly (${exchange.exitCode ?? exchange.signalCode ?? "unknown"}).`,
+    );
+  }
+
+  if (winner === "issuance") {
+    throw new Error(
+      `Issuance portal exited unexpectedly (${issuance.exitCode ?? issuance.signalCode ?? "unknown"}).`,
     );
   }
 } catch (error) {

@@ -32,7 +32,7 @@ export function AuthGate({ children, allowedRoles }: AuthGateProps) {
           This review workspace runs on the local API and is reserved for admin approvals.
         </p>
         <Link
-          href={`/login?next=${encodeURIComponent(pathname)}`}
+          href={`/signin?next=${encodeURIComponent(pathname)}`}
           className="mt-6 inline-flex rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
           Open local sign in

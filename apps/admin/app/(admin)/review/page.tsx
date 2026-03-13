@@ -1,5 +1,5 @@
-import { AdminReviewQueueScreen } from "@/features/admin/components/AdminReviewQueueScreen";
+import { AdminConsoleScreen } from "@/features/admin/components/AdminConsoleScreen";
 
 export default function ReviewPage() {
-  return <AdminReviewQueueScreen />;
+  return <AdminConsoleScreen />;
 }

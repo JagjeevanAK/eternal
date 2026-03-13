@@ -6,7 +6,8 @@ The repo is organized around one local-first product: `Eternal`, a tokenized ass
 
 ```text
 apps/api
-apps/web
+apps/exchange
+apps/issuance-portal
 apps/worker
 programs/asset-tokenization
 docs
@@ -14,20 +15,28 @@ docs
 
 ## Product Stack
 
-- `apps/web` contains the Next.js frontend and product shell.
+- `apps/exchange` contains the Next.js exchange frontend and investor workspace.
+- `apps/issuance-portal` contains the issuer, owner-verification, and admin-review frontend.
 - `apps/api` contains the local Bun API with seeded product state and mock services.
 - `apps/worker` processes local settlement jobs for payments, primary allocations, and secondary trades.
 - `programs/asset-tokenization` contains the Anchor program for issuer approval, investor allowlisting, asset offerings, holdings, listings, trades, and distributions.
 
-## Web App
+## Frontends
 
-`apps/web` now exposes:
+`apps/exchange` now exposes:
 
 - public routes: `/`, `/login`, `/marketplace`, `/marketplace/[slug]`, `/kyc`
-- authenticated routes: `/dashboard`, `/portfolio`, `/orders`, `/payments`, `/documents`, `/issuer`, `/admin`
+- authenticated routes: `/dashboard`, `/portfolio`, `/orders`, `/payments`, `/documents`
 - shared providers for theme, wallet, and local product session state
 
-The active product UI lives under `apps/web/features/product`.
+`apps/issuance-portal` now exposes:
+
+- public routes: `/`, `/login`, `/signup`
+- authenticated routes: `/verification`, `/issuer`, `/issuer/review`, `/admin`
+- shared providers for theme and local product session state
+
+The exchange product UI lives under `apps/exchange/features/product`.
+The issuance portal UI lives under `apps/issuance-portal/features/portal`.
 
 ## Local Product Services
 

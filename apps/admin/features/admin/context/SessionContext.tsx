@@ -26,7 +26,6 @@ interface SessionContextValue {
     codeHint: string;
     deliveryMode: "email" | "local";
   }>;
-  signup: (fullName: string, email: string) => Promise<{ created: boolean; user: SessionUser }>;
   loginWithOtp: (identifier: string, code: string) => Promise<SessionUser>;
   refreshSession: () => Promise<void>;
   logout: () => Promise<void>;
@@ -93,13 +92,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }>("/auth/otp", { method: "POST", body: { identifier } });
   }, []);
 
-  const signup = useCallback(async (fullName: string, email: string) => {
-    return apiFetch<{ created: boolean; user: SessionUser }>("/auth/signup", {
-      method: "POST",
-      body: { fullName, email },
-    });
-  }, []);
-
   const loginWithOtp = useCallback(async (identifier: string, code: string) => {
     const response = await apiFetch<{ token: string; user: SessionUser }>("/auth/verify", {
       method: "POST",
@@ -157,7 +149,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       loading,
       demoUsers,
       requestOtp,
-      signup,
       loginWithOtp,
       refreshSession,
       logout,
@@ -171,7 +162,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       logout,
       refreshSession,
       requestOtp,
-      signup,
       token,
       user,
     ],

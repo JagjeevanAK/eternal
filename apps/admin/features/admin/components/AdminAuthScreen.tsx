@@ -162,7 +162,7 @@ export function AdminAuthScreen() {
           <CardHeader className="pb-4">
             <CardTitle>Sign in with OTP</CardTitle>
             <CardDescription>
-              Use an admin email address or a seeded local admin identifier to open the review queue.
+              Use a provisioned admin email address or a seeded local admin identifier to open the review queue.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -208,6 +208,11 @@ export function AdminAuthScreen() {
                 Verify and continue
               </Button>
             </div>
+
+            <p className="text-sm leading-6 text-muted-foreground">
+              Admin signup is not self-serve in this app. Admin accounts must already exist in the local seed data or be
+              provisioned before OTP sign in.
+            </p>
           </CardContent>
         </Card>
 

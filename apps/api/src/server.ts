@@ -18,6 +18,7 @@ import {
   enqueueJob,
   getAvailableUnitsForListing,
   getHolding,
+  getPropertyDocumentAbsolutePath,
   getVerificationAttachmentAbsolutePath,
   getPropertyById,
   getPropertyDocuments,
@@ -27,6 +28,7 @@ import {
   readState,
   resetState,
   toPublicUser,
+  writePropertyDocumentFile,
   writeVerificationAttachmentFile,
   writeState,
 } from "./state";
@@ -34,14 +36,17 @@ import { createListingOnChain, syncStateToChain } from "./chain";
 import { minimumPrimaryUnits } from "./investment";
 import {
   approveVerificationRequest,
+  approveVerificationRequestAsAdmin,
   canAccessVerificationAttachment,
   findVerificationAttachment,
   formatVerificationRequest,
   inferVerificationMimeType,
+  listAdminVerificationRequests,
   listIssuerVerificationRequests,
   listOwnerVerificationRequests,
   normalizeVerificationText,
   rejectVerificationRequest,
+  rejectVerificationRequestAsAdmin,
   requireVerificationText,
   validateVerificationFiles,
   VerificationError,
@@ -114,6 +119,42 @@ const parseJson = async <T>(request: Request) => {
   } catch {
     return null;
   }
+};
+
+const readRequiredFormField = (
+  formData: FormData,
+  key: string,
+  fieldLabel: string,
+  maxLength: number,
+) =>
+  requireVerificationText(
+    typeof formData.get(key) === "string" ? String(formData.get(key)) : null,
+    fieldLabel,
+    maxLength,
+  );
+
+const readIntegerFormField = (
+  formData: FormData,
+  key: string,
+  fieldLabel: string,
+  { min = 1, allowZero = false }: { min?: number; allowZero?: boolean } = {},
+) => {
+  const rawValue = readRequiredFormField(formData, key, fieldLabel, 32);
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isFinite(parsedValue) || !Number.isInteger(parsedValue)) {
+    throw new VerificationError(`${fieldLabel} must be a whole number.`, 400);
+  }
+
+  if (allowZero ? parsedValue < min : parsedValue <= min - 1) {
+    const threshold = allowZero ? min : Math.max(min - 1, 0);
+    throw new VerificationError(
+      `${fieldLabel} must be ${threshold === 0 && allowZero ? "zero or greater" : `at least ${min}`}.`,
+      400,
+    );
+  }
+
+  return parsedValue;
 };
 
 const normalizeIdentifier = (value: string) => {
@@ -1178,7 +1219,13 @@ const server = Bun.serve({
         return json(404, { error: "Verification document not found." });
       }
 
-      if (!canAccessVerificationAttachment(match.request, auth.actor.user.id)) {
+      if (
+        !canAccessVerificationAttachment(
+          match.request,
+          auth.actor.user.id,
+          auth.actor.user.role,
+        )
+      ) {
         console.error("[verification-api] file access denied", {
           actorUserId: auth.actor.user.id,
           attachmentId,
@@ -1218,6 +1265,35 @@ const server = Bun.serve({
           error,
         });
         return json(404, { error: "Verification document file not found." });
+      }
+    }
+
+    if (pathname.startsWith("/property-documents/files/") && request.method === "GET") {
+      const documentId = pathname.replace("/property-documents/files/", "");
+      const state = readState();
+      const document = state.propertyDocuments.find((value) => value.id === documentId);
+
+      if (!document?.storagePath) {
+        return json(404, { error: "Property document not found." });
+      }
+
+      try {
+        const absolutePath = getPropertyDocumentAbsolutePath(document.storagePath);
+        const file = Bun.file(absolutePath);
+        if (!(await file.exists())) {
+          return json(404, { error: "Property document file not found." });
+        }
+
+        return fileResponse(file, {
+          fileName: document.name,
+          mimeType: document.mimeType ?? "application/octet-stream",
+        });
+      } catch (error) {
+        console.error("[property-document-api] file open unexpected error", {
+          documentId,
+          error,
+        });
+        return json(404, { error: "Property document file not found." });
       }
     }
 
@@ -1340,6 +1416,124 @@ const server = Bun.serve({
       }
     }
 
+    if (pathname === "/admin/verification/requests" && request.method === "GET") {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "admin") {
+        return json(403, { error: "Admin access required." });
+      }
+
+      console.info("[verification-api] admin list", {
+        adminUserId: auth.actor.user.id,
+        requestCount: auth.state.verificationRequests.length,
+      });
+
+      return json(200, listAdminVerificationRequests(auth.state));
+    }
+
+    if (
+      pathname.startsWith("/admin/verification/requests/") &&
+      pathname.endsWith("/approve") &&
+      request.method === "POST"
+    ) {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "admin") {
+        return json(403, { error: "Admin access required." });
+      }
+
+      const requestId = pathname.replace("/admin/verification/requests/", "").replace("/approve", "");
+      const body = await parseJson<{ reviewerNote?: string }>(request);
+
+      try {
+        console.info("[verification-api] admin approve received", {
+          adminUserId: auth.actor.user.id,
+          requestId,
+          reviewerNoteLength: body?.reviewerNote?.trim().length ?? 0,
+        });
+        const reviewedRequest = approveVerificationRequestAsAdmin(
+          auth.state,
+          requestId,
+          auth.actor.user.id,
+          body?.reviewerNote ?? null,
+        );
+        writeState(auth.state);
+
+        return json(200, {
+          request: formatVerificationRequest(auth.state, reviewedRequest),
+        });
+      } catch (error) {
+        if (error instanceof VerificationError) {
+          console.error("[verification-api] admin approve validation error", {
+            adminUserId: auth.actor.user.id,
+            requestId,
+            error: error.message,
+            status: error.status,
+          });
+          return json(error.status, { error: error.message });
+        }
+
+        console.error("[verification-api] admin approve unexpected error", error);
+        throw error;
+      }
+    }
+
+    if (
+      pathname.startsWith("/admin/verification/requests/") &&
+      pathname.endsWith("/reject") &&
+      request.method === "POST"
+    ) {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "admin") {
+        return json(403, { error: "Admin access required." });
+      }
+
+      const requestId = pathname.replace("/admin/verification/requests/", "").replace("/reject", "");
+      const body = await parseJson<{ reviewerNote?: string }>(request);
+
+      try {
+        console.info("[verification-api] admin reject received", {
+          adminUserId: auth.actor.user.id,
+          requestId,
+          reviewerNoteLength: body?.reviewerNote?.trim().length ?? 0,
+        });
+        const reviewedRequest = rejectVerificationRequestAsAdmin(
+          auth.state,
+          requestId,
+          auth.actor.user.id,
+          body?.reviewerNote ?? null,
+        );
+        writeState(auth.state);
+
+        return json(200, {
+          request: formatVerificationRequest(auth.state, reviewedRequest),
+        });
+      } catch (error) {
+        if (error instanceof VerificationError) {
+          console.error("[verification-api] admin reject validation error", {
+            adminUserId: auth.actor.user.id,
+            requestId,
+            error: error.message,
+            status: error.status,
+          });
+          return json(error.status, { error: error.message });
+        }
+
+        console.error("[verification-api] admin reject unexpected error", error);
+        throw error;
+      }
+    }
+
     if (pathname === "/documents" && request.method === "GET") {
       const auth = requireAuth(request);
       if (auth.error || !auth.actor) {
@@ -1398,126 +1592,151 @@ const server = Bun.serve({
         return json(403, { error: "Issuer access required." });
       }
 
-      const body = await parseJson<{
-        assetClass?: AssetClass;
-        assetType?: string;
-        symbol?: string;
-        name?: string;
-        city?: string;
-        state?: string;
-        marketSegment?: string;
-        registrationRef?: string;
-        summary?: string;
-        structureName?: string;
-        targetYieldBps?: number;
-        targetIrrBps?: number;
-        expectedExitMonths?: number;
-        minimumInvestmentInrMinor?: number;
-        unitPriceInrMinor?: number;
-        totalUnits?: number;
-      }>(request);
+      try {
+        const formData = await request.formData();
+        const assetClassValue = readRequiredFormField(formData, "assetClass", "Asset class", 40);
+        if (assetClassValue !== "real_estate" && assetClassValue !== "company_share") {
+          return json(400, { error: "Select a valid asset class." });
+        }
 
-      if (
-        !body?.assetClass ||
-        !body.assetType ||
-        !body.symbol ||
-        !body.name ||
-        !body.city ||
-        !body.state ||
-        !body.marketSegment ||
-        !body.registrationRef ||
-        !body.summary ||
-        !body.structureName ||
-        body.targetYieldBps == null ||
-        body.targetIrrBps == null ||
-        body.minimumInvestmentInrMinor == null ||
-        body.unitPriceInrMinor == null ||
-        body.totalUnits == null
-      ) {
-        return json(400, { error: "All asset submission fields are required." });
+        const body = {
+          assetClass: assetClassValue as AssetClass,
+          assetType: readRequiredFormField(formData, "assetType", "Asset type", 120),
+          symbol: readRequiredFormField(formData, "symbol", "Ticker / unit symbol", 32),
+          name: readRequiredFormField(formData, "name", "Asset name", 120),
+          city: readRequiredFormField(formData, "city", "City", 80),
+          state: readRequiredFormField(formData, "state", "State", 80),
+          marketSegment: readRequiredFormField(formData, "marketSegment", "Market segment", 80),
+          registrationRef: readRequiredFormField(formData, "registrationRef", "Registration reference", 160),
+          summary: readRequiredFormField(formData, "summary", "Summary", 800),
+          structureName: readRequiredFormField(formData, "structureName", "Structure name", 120),
+          targetYieldBps: readIntegerFormField(formData, "targetYieldBps", "Target yield (bps)", {
+            min: 0,
+            allowZero: true,
+          }),
+          targetIrrBps: readIntegerFormField(formData, "targetIrrBps", "Target IRR (bps)"),
+          expectedExitMonths: readIntegerFormField(
+            formData,
+            "expectedExitMonths",
+            "Expected exit (months)",
+          ),
+          minimumInvestmentInrMinor: readIntegerFormField(
+            formData,
+            "minimumInvestmentInrMinor",
+            "Minimum investment (INR)",
+          ),
+          unitPriceInrMinor: readIntegerFormField(formData, "unitPriceInrMinor", "Unit price (INR)"),
+          totalUnits: readIntegerFormField(formData, "totalUnits", "Total units"),
+        };
+        const attachments = formData
+          .getAll("documents")
+          .filter((value): value is File => value instanceof File);
+
+        validateVerificationFiles(
+          attachments.map((value) => ({
+            name: value.name,
+            type: value.type,
+            size: value.size,
+          })),
+        );
+
+        const slug = body.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        const code = (body.symbol || slug)
+          .toUpperCase()
+          .replace(/[^A-Z0-9]+/g, "-")
+          .replace(/^-|-$/g, "")
+          .slice(0, 32);
+        const state = auth.state;
+        const property: PropertyProject = {
+          id: `property_${crypto.randomUUID().slice(0, 8)}`,
+          slug,
+          issuerId: auth.actor.user.id,
+          code: code || `ASSET-${crypto.randomUUID().slice(0, 6).toUpperCase()}`,
+          name: body.name,
+          assetClass: body.assetClass,
+          assetType: body.assetType,
+          symbol: body.symbol,
+          city: body.city,
+          state: body.state,
+          marketSegment: body.marketSegment,
+          summary: body.summary,
+          heroTag:
+            body.assetClass === "company_share"
+              ? `Company shares · ${body.assetType}`
+              : `Real estate · ${body.assetType}`,
+          riskBand: body.assetClass === "company_share" ? "Growth" : "Core Plus",
+          registrationRef: body.registrationRef,
+          structureName: body.structureName,
+          structureType: "Private Limited",
+          targetYieldBps: body.targetYieldBps,
+          targetIrrBps: body.targetIrrBps,
+          expectedExitMonths: body.expectedExitMonths,
+          minimumInvestmentInrMinor: body.minimumInvestmentInrMinor,
+          unitPriceInrMinor: body.unitPriceInrMinor,
+          totalUnits: body.totalUnits,
+          availableUnits: body.totalUnits,
+          fundedUnits: 0,
+          status: "review",
+          createdAt: new Date().toISOString(),
+          approvedAt: null,
+          liveAt: null,
+          onChainPropertyAddress: null,
+          onChainOfferingAddress: null,
+          submissionSignature: null,
+          approvalSignature: null,
+          publicationSignature: null,
+          lastChainSyncAt: null,
+        };
+
+        state.properties.unshift(property);
+
+        const uploadedDocuments: LocalState["propertyDocuments"] = [];
+
+        for (const file of attachments) {
+          const documentId = `doc_${crypto.randomUUID().slice(0, 8)}`;
+          const mimeType = inferVerificationMimeType(file.name, file.type);
+          const uploadedAt = new Date().toISOString();
+          const storagePath = writePropertyDocumentFile(
+            property.id,
+            documentId,
+            file.name,
+            new Uint8Array(await file.arrayBuffer()),
+          );
+
+          uploadedDocuments.push({
+            id: documentId,
+            propertyId: property.id,
+            name: file.name,
+            category: "Issuer submission",
+            status: "pending",
+            source: "issuer",
+            url: `http://127.0.0.1:${API_PORT}/property-documents/files/${documentId}`,
+            updatedAt: uploadedAt,
+            mimeType,
+            sizeBytes: file.size,
+            uploadedAt,
+            storagePath,
+          });
+        }
+
+        state.propertyDocuments.unshift(...uploadedDocuments.reverse());
+
+        addNotification(
+          state,
+          "user_admin",
+          "Asset review required",
+          `${property.name} was submitted by ${auth.actor.user.fullName} with ${attachments.length} supporting document${attachments.length === 1 ? "" : "s"}.`,
+        );
+
+        const syncedState = await syncChainReadModelSafely(state);
+        return json(201, { property: formatProperty(syncedState, property) });
+      } catch (error) {
+        if (error instanceof VerificationError) {
+          return json(error.status, { error: error.message });
+        }
+
+        throw error;
       }
-
-      const slug = body.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-      const code = (body.symbol || slug)
-        .toUpperCase()
-        .replace(/[^A-Z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 32);
-      const state = auth.state;
-      const property: PropertyProject = {
-        id: `property_${crypto.randomUUID().slice(0, 8)}`,
-        slug,
-        issuerId: auth.actor.user.id,
-        code: code || `ASSET-${crypto.randomUUID().slice(0, 6).toUpperCase()}`,
-        name: body.name,
-        assetClass: body.assetClass,
-        assetType: body.assetType,
-        symbol: body.symbol,
-        city: body.city,
-        state: body.state,
-        marketSegment: body.marketSegment,
-        summary: body.summary,
-        heroTag:
-          body.assetClass === "company_share"
-            ? `Company shares · ${body.assetType}`
-            : `Real estate · ${body.assetType}`,
-        riskBand: body.assetClass === "company_share" ? "Growth" : "Core Plus",
-        registrationRef: body.registrationRef,
-        structureName: body.structureName,
-        structureType: "Private Limited",
-        targetYieldBps: body.targetYieldBps,
-        targetIrrBps: body.targetIrrBps,
-        expectedExitMonths: body.expectedExitMonths ?? (body.assetClass === "company_share" ? 48 : 72),
-        minimumInvestmentInrMinor: body.minimumInvestmentInrMinor,
-        unitPriceInrMinor: body.unitPriceInrMinor,
-        totalUnits: body.totalUnits,
-        availableUnits: body.totalUnits,
-        fundedUnits: 0,
-        status: "review",
-        createdAt: new Date().toISOString(),
-        approvedAt: null,
-        liveAt: null,
-        onChainPropertyAddress: null,
-        onChainOfferingAddress: null,
-        submissionSignature: null,
-        approvalSignature: null,
-        publicationSignature: null,
-        lastChainSyncAt: null,
-      };
-
-      state.properties.unshift(property);
-      state.propertyDocuments.unshift(
-        {
-          id: `doc_${crypto.randomUUID().slice(0, 8)}`,
-          propertyId: property.id,
-          name: "Issuer deck",
-          category: "Marketing",
-          status: "pending",
-          source: "issuer",
-          url: `https://local.eternal.test/docs/${property.slug}/issuer-deck.pdf`,
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: `doc_${crypto.randomUUID().slice(0, 8)}`,
-          propertyId: property.id,
-          name: "Legal diligence pack",
-          category: "Legal",
-          status: "pending",
-          source: "legal",
-          url: `https://local.eternal.test/docs/${property.slug}/legal-pack.pdf`,
-          updatedAt: new Date().toISOString(),
-        },
-      );
-
-      addNotification(
-        state,
-        "user_admin",
-        "Asset review required",
-        `${property.name} was submitted by ${auth.actor.user.fullName}.`,
-      );
-
-      await syncChainReadModel(state);
-      return json(201, { property: formatProperty(state, property) });
     }
 
     if (pathname === "/admin/overview" && request.method === "GET") {
@@ -1538,8 +1757,14 @@ const server = Bun.serve({
         }));
 
       const reviewProperties = auth.state.properties
-        .filter((value) => value.status === "review" || value.status === "approved")
-        .map((value) => formatProperty(auth.state, value));
+        .filter(
+          (value) =>
+            value.status === "review" || value.status === "approved" || value.status === "rejected",
+        )
+        .map((value) => ({
+          ...formatProperty(auth.state, value),
+          documents: getPropertyDocuments(auth.state, value.id),
+        }));
 
       const settlementQueue = auth.state.jobs
         .filter((value) => value.status === "queued" || value.status === "processing")
@@ -1670,6 +1895,37 @@ const server = Bun.serve({
       );
 
       await syncChainReadModel(state);
+      return json(200, { property: formatProperty(state, property) });
+    }
+
+    if (pathname.startsWith("/admin/properties/") && pathname.endsWith("/reject") && request.method === "POST") {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      if (auth.actor.user.role !== "admin") {
+        return json(403, { error: "Admin access required." });
+      }
+
+      const propertyId = pathname.replace("/admin/properties/", "").replace("/reject", "");
+      const state = auth.state;
+      const property = state.properties.find((value) => value.id === propertyId);
+      if (!property) {
+        return json(404, { error: "Asset not found." });
+      }
+
+      property.status = "rejected";
+      property.approvedAt = null;
+
+      addNotification(
+        state,
+        property.issuerId,
+        "Asset rejected",
+        `${property.name} needs corrections before it can move into tokenization review again.`,
+      );
+
+      writeState(state);
       return json(200, { property: formatProperty(state, property) });
     }
 

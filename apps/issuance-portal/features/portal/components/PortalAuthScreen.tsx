@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -18,6 +18,21 @@ type AuthMode = "login" | "signup";
 interface PortalAuthScreenProps {
   defaultMode: AuthMode;
 }
+
+const signupSteps = [
+  {
+    title: "Create your portal identity",
+    description: "Register with your real work email so the issuer review flow can stay tied to your submission history.",
+  },
+  {
+    title: "Verify with OTP",
+    description: "After signup, we switch you back into OTP sign in automatically and send the code to the same email.",
+  },
+  {
+    title: "Start your asset issue",
+    description: "Once verified, you can upload supporting documents and send the asset into the admin approval queue.",
+  },
+];
 
 const nextRouteForRole = (role: "admin" | "issuer" | "investor") => {
   if (role === "admin") {
@@ -116,6 +131,11 @@ export function PortalAuthScreen({ defaultMode }: PortalAuthScreenProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSignupSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSignup();
   };
 
   const handleVerify = async () => {
@@ -267,31 +287,78 @@ export function PortalAuthScreen({ defaultMode }: PortalAuthScreenProps) {
                 </div>
               </>
             ) : (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="full-name">Full name</Label>
-                  <Input
-                    id="full-name"
-                    value={signupName}
-                    onChange={(event) => setSignupName(event.target.value)}
-                    placeholder="Rohan Shah"
-                  />
+              <form onSubmit={handleSignupSubmit} className="space-y-5">
+                <div className="rounded-[1.6rem] border border-border bg-background/60 p-4">
+                  <div className="flex items-center">
+                    <Badge variant="secondary">Issuer signup</Badge>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    Use the same visual system as the rest of the portal, but keep the signup focused on issuer onboarding.
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={signupEmail}
-                    onChange={(event) => setSignupEmail(event.target.value)}
-                    placeholder="name@example.com"
-                  />
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="full-name">Full name</Label>
+                    <Input
+                      id="full-name"
+                      autoComplete="name"
+                      value={signupName}
+                      onChange={(event) => setSignupName(event.target.value)}
+                      placeholder="Rohan Shah"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Work email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      value={signupEmail}
+                      onChange={(event) => setSignupEmail(event.target.value)}
+                      placeholder="name@example.com"
+                    />
+                  </div>
                 </div>
-                <Button onClick={handleSignup} disabled={loading} className="w-full">
-                  Create account
+
+                <div className="rounded-[1.6rem] border border-border bg-background/60 p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-foreground">What happens after signup</p>
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        A short issuer onboarding flow takes you from account creation to admin review submission.
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="shrink-0">
+                      3 steps
+                    </Badge>
+                  </div>
+
+                  <div className="mt-5 grid gap-3">
+                    {signupSteps.map((step, index) => (
+                      <div
+                        key={step.title}
+                        className="rounded-[1.35rem] border border-border/80 bg-card/50 px-4 py-4 transition-colors hover:border-primary/30"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-sm font-semibold text-primary">
+                            {String(index + 1).padStart(2, "0")}
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                            <p className="text-sm leading-6 text-muted-foreground">{step.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? "Creating account..." : "Create account"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
-              </>
+              </form>
             )}
           </CardContent>
         </Card>

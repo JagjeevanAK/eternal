@@ -204,22 +204,41 @@ export const listIssuerVerificationRequests = (state: LocalState, issuerId: stri
   };
 };
 
-const requireIssuerOwnedRequest = (
-  state: LocalState,
-  requestId: string,
-  issuerId: string,
-) => {
+export const listAdminVerificationRequests = (state: LocalState) => {
+  const requests = [...state.verificationRequests].sort(sortBySubmittedAtDesc);
+
+  return {
+    stats: {
+      pending: requests.filter((value) => value.status === "pending").length,
+      approved: requests.filter((value) => value.status === "approved").length,
+      rejected: requests.filter((value) => value.status === "rejected").length,
+    },
+    requests: requests.map((value) => formatVerificationRequest(state, value)),
+  };
+};
+
+const requirePendingVerificationRequest = (state: LocalState, requestId: string) => {
   const request = state.verificationRequests.find((value) => value.id === requestId);
   if (!request) {
     throw new VerificationError("Verification request not found.", 404);
   }
 
-  if (request.issuerId !== issuerId) {
-    throw new VerificationError("Issuer access required.", 403);
-  }
-
   if (request.status !== "pending") {
     throw new VerificationError("Only pending requests can be reviewed.", 400);
+  }
+
+  return request;
+};
+
+const requireIssuerOwnedRequest = (
+  state: LocalState,
+  requestId: string,
+  issuerId: string,
+) => {
+  const request = requirePendingVerificationRequest(state, requestId);
+
+  if (request.issuerId !== issuerId) {
+    throw new VerificationError("Issuer access required.", 403);
   }
 
   return request;
@@ -257,6 +276,38 @@ export const rejectVerificationRequest = (
   return request;
 };
 
+export const approveVerificationRequestAsAdmin = (
+  state: LocalState,
+  requestId: string,
+  reviewerId: string,
+  reviewerNote: string | null | undefined,
+) => {
+  const request = requirePendingVerificationRequest(state, requestId);
+
+  request.status = "approved";
+  request.reviewedAt = new Date().toISOString();
+  request.reviewerId = reviewerId;
+  request.reviewerNote = normalizeVerificationText(reviewerNote, 600);
+
+  return request;
+};
+
+export const rejectVerificationRequestAsAdmin = (
+  state: LocalState,
+  requestId: string,
+  reviewerId: string,
+  reviewerNote: string | null | undefined,
+) => {
+  const request = requirePendingVerificationRequest(state, requestId);
+
+  request.status = "rejected";
+  request.reviewedAt = new Date().toISOString();
+  request.reviewerId = reviewerId;
+  request.reviewerNote = requireVerificationText(reviewerNote, "Rejection reason", 600);
+
+  return request;
+};
+
 export const findVerificationAttachment = (state: LocalState, attachmentId: string) => {
   for (const request of state.verificationRequests) {
     const attachment = request.attachments.find((value) => value.id === attachmentId);
@@ -274,4 +325,5 @@ export const findVerificationAttachment = (state: LocalState, attachmentId: stri
 export const canAccessVerificationAttachment = (
   request: VerificationRequest,
   userId: string,
-) => request.ownerUserId === userId || request.issuerId === userId;
+  role?: User["role"],
+) => role === "admin" || request.ownerUserId === userId || request.issuerId === userId;

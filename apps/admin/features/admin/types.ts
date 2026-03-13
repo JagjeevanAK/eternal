@@ -312,7 +312,7 @@ export interface AdminOverview {
     treasuryBalanceInrMinor: number;
   };
   pendingKyc: Array<KycRecord & { user: SessionUser }>;
-  reviewProperties: PropertySummary[];
+  reviewProperties: Array<PropertySummary & { documents: PropertyDocument[] }>;
   settlementQueue: QueueJob[];
 }
 

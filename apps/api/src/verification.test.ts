@@ -2,11 +2,14 @@ import { describe, expect, test } from "bun:test";
 import type { LocalState, User, VerificationRequest } from "./domain";
 import {
   approveVerificationRequest,
+  approveVerificationRequestAsAdmin,
   canAccessVerificationAttachment,
   findVerificationAttachment,
+  listAdminVerificationRequests,
   listIssuerVerificationRequests,
   listOwnerVerificationRequests,
   rejectVerificationRequest,
+  rejectVerificationRequestAsAdmin,
   validateVerificationFiles,
   VerificationError,
 } from "./verification";
@@ -60,6 +63,7 @@ const makeState = (requests: VerificationRequest[] = [makeRequest()]): LocalStat
     secondaryFeeBps: 50,
   },
   users: [
+    makeUser("user_admin", "admin", "Anika Admin", "admin@eternal.local"),
     makeUser("user_owner", "investor", "Aditi Owner", "owner@eternal.local"),
     makeUser("user_issuer", "issuer", "Meera Issuer", "issuer@eternal.local"),
     makeUser("user_other_issuer", "issuer", "Other Issuer", "other-issuer@eternal.local"),
@@ -135,6 +139,31 @@ describe("verification helpers", () => {
     ]);
   });
 
+  test("lists admin queue across every verification request", () => {
+    const state = makeState([
+      makeRequest({ id: "pending_request", status: "pending" }),
+      makeRequest({ id: "approved_request", status: "approved" }),
+      makeRequest({
+        id: "other_issuer_request",
+        issuerId: "user_other_issuer",
+        status: "rejected",
+      }),
+    ]);
+
+    const queue = listAdminVerificationRequests(state);
+
+    expect(queue.stats).toEqual({
+      pending: 1,
+      approved: 1,
+      rejected: 1,
+    });
+    expect(queue.requests.map((request) => request.id)).toEqual([
+      "pending_request",
+      "approved_request",
+      "other_issuer_request",
+    ]);
+  });
+
   test("approves a pending request and records reviewer metadata", () => {
     const state = makeState();
 
@@ -151,11 +180,39 @@ describe("verification helpers", () => {
     expect(request.reviewedAt).not.toBeNull();
   });
 
+  test("admin approval works across issuer assignments", () => {
+    const state = makeState([
+      makeRequest({
+        id: "other_issuer_request",
+        issuerId: "user_other_issuer",
+      }),
+    ]);
+
+    const request = approveVerificationRequestAsAdmin(
+      state,
+      "other_issuer_request",
+      "user_admin",
+      "Ready to move into tokenization.",
+    );
+
+    expect(request.status).toBe("approved");
+    expect(request.reviewerId).toBe("user_admin");
+    expect(request.reviewerNote).toBe("Ready to move into tokenization.");
+  });
+
   test("reject requires a reason", () => {
     const state = makeState();
 
     expect(() =>
       rejectVerificationRequest(state, "verification_1", "user_issuer", ""),
+    ).toThrowError(VerificationError);
+  });
+
+  test("admin reject requires a reason", () => {
+    const state = makeState();
+
+    expect(() =>
+      rejectVerificationRequestAsAdmin(state, "verification_1", "user_admin", ""),
     ).toThrowError(VerificationError);
   });
 
@@ -166,6 +223,7 @@ describe("verification helpers", () => {
     expect(match?.attachment.name).toBe("title-report.pdf");
     expect(match ? canAccessVerificationAttachment(match.request, "user_owner") : false).toBe(true);
     expect(match ? canAccessVerificationAttachment(match.request, "user_issuer") : false).toBe(true);
+    expect(match ? canAccessVerificationAttachment(match.request, "user_admin", "admin") : false).toBe(true);
     expect(match ? canAccessVerificationAttachment(match.request, "user_other_investor") : true).toBe(false);
   });
 });

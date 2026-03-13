@@ -80,6 +80,10 @@ export interface PropertyDocument {
   source: "issuer" | "legal" | "compliance";
   url: string;
   updatedAt: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  uploadedAt?: string;
+  storagePath?: string;
 }
 
 export interface VerificationAttachment {

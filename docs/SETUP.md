@@ -1,6 +1,6 @@
 # Setup
 
-This repo uses a Bun workspace at the root, a Next.js app in `apps/web`, local Bun services in `apps/api` and `apps/worker`, and an Anchor program in `programs/asset-tokenization`.
+This repo uses a Bun workspace at the root, Next.js apps in `apps/exchange` and `apps/issuance-portal`, local Bun services in `apps/api` and `apps/worker`, and an Anchor program in `programs/asset-tokenization`.
 
 ## Prerequisites
 
@@ -28,18 +28,28 @@ bun run dev:api
 # Start only the local worker
 bun run dev:worker
 
-# Run only the web app on devnet
-bun run dev:web
+# Run only the exchange app on devnet
+bun run dev:exchange
 
-# Run the web app against localnet
-bun run dev:web:local
+# Run the exchange app against localnet
+bun run dev:exchange:local
 
-# Build the web app
-bun run build
+# Run the issuance portal
+bun run dev:issuance
 
-# Lint and type-check the web app
-bun run lint
-bun run check
+# Build the exchange app
+bun run build:exchange
+
+# Build the issuance portal
+bun run build:issuance
+
+# Lint and type-check the exchange app
+bun run lint:exchange
+bun run check:exchange
+
+# Lint and type-check the issuance portal
+bun run lint:issuance
+bun run check:issuance
 
 # Run the Anchor test suite
 bun run test:program
@@ -71,7 +81,8 @@ The main demo flow is localhost-first. `bun dev` starts:
 - the local worker
 - the local validator on `127.0.0.1:8899`
 - the platform initialization script
-- the web app on `localhost:3000`
+- the exchange app on `localhost:3000`
+- the issuance portal on `localhost:3001`
 
 If you need a fresh wallet:
 
