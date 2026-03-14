@@ -1,17 +1,8 @@
-'use client';
+"use client";
 
-import type { ReactNode } from 'react';
-import { ThemeProvider } from 'next-themes';
-import { SessionProvider } from '@/features/product/context/SessionContext';
+import type { ReactNode } from "react";
+import { SessionProvider } from "@/features/exchange/context/SessionContext";
 
-interface ProvidersProps {
-  children: ReactNode;
-}
-
-export default function Providers({ children }: ProvidersProps) {
-  return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange={false}>
-      <SessionProvider>{children}</SessionProvider>
-    </ThemeProvider>
-  );
+export function Providers({ children }: { children: ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>;
 }

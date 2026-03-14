@@ -22,6 +22,9 @@ bun install
 # One-command local demo setup
 bun dev
 
+# Start the exchange app only
+bun run dev:exchange
+
 # Start only the local API
 bun run dev:api
 

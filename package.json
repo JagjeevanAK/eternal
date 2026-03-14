@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "bun --env-file=.env run scripts/dev-setup.ts",
     "dev:local": "bun --env-file=.env run dev",
+    "dev:stack": "bun --env-file=.env run scripts/dev-setup.ts",
     "dev:api": "cd apps/api && bun --env-file=../../.env run dev",
     "dev:worker": "cd apps/worker && bun --env-file=../../.env run dev",
     "dev:exchange": "cd apps/exchange && NEXT_PUBLIC_API_URL=http://127.0.0.1:4000 bun --env-file=../../.env run dev",

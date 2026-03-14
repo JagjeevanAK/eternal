@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FileText, Mail, ShieldCheck } from "lucide-react";
+import { GalleryVerticalEnd } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -111,144 +111,118 @@ export function AdminAuthScreen() {
   };
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 lg:grid-cols-[0.92fr,1.08fr]">
-      <section className="space-y-6">
-        <Badge className="w-fit" variant="secondary">
-          Admin Portal
-        </Badge>
-        <div className="space-y-4">
-          <h1 className="max-w-xl text-5xl font-semibold tracking-tight">
-            Review issuer submissions and approve supporting documents.
-          </h1>
-          <p className="max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
-            This workspace is for admins who validate uploaded ownership and compliance documents before an asset can
-            move into tokenization.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="bg-card/90">
-            <CardContent className="p-5">
-              <Mail className="h-5 w-5 text-primary" />
-              <p className="mt-4 text-sm font-medium">OTP access</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Real admin emails receive a one-time code. Seeded demo admins can keep using <code>000000</code>.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/90">
-            <CardContent className="p-5">
-              <FileText className="h-5 w-5 text-primary" />
-              <p className="mt-4 text-sm font-medium">Document queue</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Open uploaded files, read the issuer note, and decide whether the request moves ahead.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/90">
-            <CardContent className="p-5">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <p className="mt-4 text-sm font-medium">Admin-only</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Non-admin accounts are blocked from this workspace even if they receive an OTP.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section className="space-y-6">
-        <Card className="border-border bg-card/95 backdrop-blur">
-          <CardHeader className="pb-4">
-            <CardTitle>Sign in with OTP</CardTitle>
-            <CardDescription>
-              Use a provisioned admin email address or a seeded local admin identifier to open the review queue.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="identifier">Email or phone</Label>
-              <Input
-                id="identifier"
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="admin@example.com or +91 90000 00003"
-              />
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col items-center gap-2">
+            <a href="#" className="flex flex-col items-center gap-2 font-medium">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md">
+                <GalleryVerticalEnd className="size-6" />
+              </div>
+              <span className="sr-only">Eternal Admin</span>
+            </a>
+            <h1 className="text-xl font-bold">Eternal Admin Portal</h1>
+            <div className="text-center text-sm text-muted-foreground">
+              Sign in with OTP to access the review console.
             </div>
+          </div>
 
-            {challengeSent ? (
-              <div className="space-y-2">
-                <Label htmlFor="otp">OTP code</Label>
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">Sign in with OTP</CardTitle>
+              <CardDescription>
+                Use a provisioned admin email or a seeded local admin identifier.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="identifier">Email or phone</Label>
                 <Input
-                  id="otp"
-                  value={code}
-                  onChange={(event) => setCode(event.target.value)}
-                  placeholder="000000"
+                  id="identifier"
+                  value={identifier}
+                  onChange={(event) => setIdentifier(event.target.value)}
+                  placeholder="admin@example.com or +91 90000 00003"
                 />
               </div>
-            ) : null}
 
-            {codeHint ? (
-              <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
-                {codeHint}
-              </div>
-            ) : null}
-
-            {user && user.role !== "admin" ? (
-              <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
-                Current session: {user.fullName} ({formatRole(user.role)}). Sign out or use an admin account.
-              </div>
-            ) : null}
-
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={handleRequestOtp} disabled={loading} variant="outline">
-                {challengeSent ? "Resend OTP" : "Request OTP"}
-              </Button>
-              <Button onClick={handleVerify} disabled={loading || !challengeSent}>
-                Verify and continue
-              </Button>
-            </div>
-
-            <p className="text-sm leading-6 text-muted-foreground">
-              Admin signup is not self-serve in this app. Admin accounts must already exist in the local seed data or be
-              provisioned before OTP sign in.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/90">
-          <CardHeader>
-            <CardTitle className="text-xl">Seeded local admin accounts</CardTitle>
-            <CardDescription>Jump directly into the local review console without email delivery.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            {adminDemoUsers.map((demoUser) => (
-              <button
-                key={demoUser.identifier}
-                type="button"
-                onClick={() => void handleQuickLogin(demoUser.identifier)}
-                disabled={loading}
-                className="rounded-[1.4rem] border border-border bg-background p-4 text-left transition-colors hover:border-primary/30 disabled:opacity-60"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{demoUser.fullName}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{formatRole(demoUser.role)}</p>
-                  </div>
-                  <Badge variant="muted">{formatRole(demoUser.kycStatus)}</Badge>
+              {challengeSent ? (
+                <div className="grid gap-2">
+                  <Label htmlFor="otp">OTP code</Label>
+                  <Input
+                    id="otp"
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                    placeholder="000000"
+                  />
                 </div>
-                <p className="mt-4 text-sm text-muted-foreground">{demoUser.identifier}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{demoUser.phone}</p>
-              </button>
-            ))}
-          </CardContent>
-        </Card>
+              ) : null}
 
-        <p className="text-sm text-muted-foreground">
-          The queue in this app is the current document review flow copied from the issuance portal and rebased for
-          admins.
-        </p>
-      </section>
+              {codeHint ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+                  {codeHint}
+                </div>
+              ) : null}
+
+              {user && user.role !== "admin" ? (
+                <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
+                  Current session: {user.fullName} ({formatRole(user.role)}). Sign out or use an admin account.
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-2">
+                <Button onClick={handleRequestOtp} disabled={loading} variant="outline" className="w-full">
+                  {challengeSent ? "Resend OTP" : "Request OTP"}
+                </Button>
+                <Button onClick={handleVerify} disabled={loading || !challengeSent} className="w-full">
+                  Verify and continue
+                </Button>
+              </div>
+
+              <p className="text-center text-xs text-muted-foreground">
+                Admin signup is not self-serve. Admin accounts must already exist in the local seed data.
+              </p>
+            </CardContent>
+          </Card>
+
+          <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+            <span className="relative z-10 bg-background px-2 text-muted-foreground">
+              Or use a seeded account
+            </span>
+          </div>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Seeded local admin accounts</CardTitle>
+              <CardDescription>Jump directly into the local review console.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              {adminDemoUsers.map((demoUser) => (
+                <button
+                  key={demoUser.identifier}
+                  type="button"
+                  onClick={() => void handleQuickLogin(demoUser.identifier)}
+                  disabled={loading}
+                  className="rounded-xl border border-border bg-background p-4 text-left transition-colors hover:border-primary/30 disabled:opacity-60"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{demoUser.fullName}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{formatRole(demoUser.role)}</p>
+                    </div>
+                    <Badge variant="muted">{formatRole(demoUser.kycStatus)}</Badge>
+                  </div>
+                  <p className="mt-3 text-sm text-muted-foreground">{demoUser.identifier}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{demoUser.phone}</p>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          <div className="text-balance text-center text-xs text-muted-foreground">
+            The queue in this app is the current document review flow for admins.
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -28,6 +28,9 @@ bun install
 # One-command local product stack
 bun dev
 
+# Start only the exchange app
+bun run dev:exchange
+
 # Start pieces individually
 bun run dev:api
 bun run dev:worker

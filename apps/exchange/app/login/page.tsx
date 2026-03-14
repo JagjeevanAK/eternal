@@ -1,16 +1,20 @@
 import { Suspense } from "react";
-import { LoginScreen } from "@/features/product/components/LoginScreen";
+import { LoginForm } from "@/components/login-form";
+
+function LoginPageContent() {
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      <div className="w-full max-w-md">
+        <LoginForm />
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="mx-auto max-w-6xl px-6 py-16 text-sm text-muted-foreground">
-          Loading sign in...
-        </div>
-      }
-    >
-      <LoginScreen />
+    <Suspense fallback={null}>
+      <LoginPageContent />
     </Suspense>
   );
 }

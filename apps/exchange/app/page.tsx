@@ -1,5 +1,5 @@
-import { ProductLandingPage } from '@/features/product/components/ProductLandingPage';
+import { redirect } from "next/navigation";
 
-export default function HomePageRoute() {
-  return <ProductLandingPage />;
+export default function Home() {
+  redirect("/marketplace");
 }

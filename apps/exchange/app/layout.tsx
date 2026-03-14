@@ -1,70 +1,22 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Providers } from "@/app/providers";
 import "./globals.css";
-import GlobalOverlays from "./GlobalOverlays";
-import Providers from "./providers";
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+  src: "../../issuance-portal/app/fonts/GeistVF.woff",
   variable: "--font-geist-sans",
-  weight: "100 900",
 });
+
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+  src: "../../issuance-portal/app/fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  weight: "100 900",
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Eternal",
-    template: "%s | Eternal",
-  },
+  title: "Eternal Exchange",
   description:
-    "A local-first tokenized asset exchange for browsing approved assets, placing fixed-price orders, and managing holdings.",
-  keywords: [
-    "asset tokenization",
-    "asset exchange",
-    "company shares",
-    "real estate investing",
-    "Solana",
-    "fixed price marketplace",
-  ],
-  openGraph: {
-    title: "Eternal",
-    description:
-      "A local-first tokenized asset exchange for browsing approved assets, placing fixed-price orders, and managing holdings.",
-    siteName: "Eternal",
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Eternal",
-    description:
-      "A local-first tokenized asset exchange for browsing approved assets, placing fixed-price orders, and managing holdings.",
-  },
-  icons: {
-    icon: [
-      { url: 'favicon.ico', sizes: 'any' },
-      { url: 'android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: 'android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: 'apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
+    "Primary and secondary token trading interface backed by Eternal's local exchange API and Solana Anchor program.",
 };
 
 export default function RootLayout({
@@ -73,12 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          <GlobalOverlays />
-          {children}
-        </Providers>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
