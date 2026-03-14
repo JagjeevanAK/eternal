@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiFetch } from "@/lib/product-api";
 import { AuthGate } from "@/features/exchange/components/AuthGate";
@@ -49,11 +48,6 @@ export function OrdersScreen() {
           eyebrow="Orders"
           title="Primary subscriptions and secondary trades"
           description="Review your execution trail, payment linkage, and settlement metadata from a dedicated orders page."
-          actions={
-            <Button asChild variant="outline">
-              <Link href="/payments">Open payments</Link>
-            </Button>
-          }
         />
 
         {error ? <Notice tone="error">{error}</Notice> : null}

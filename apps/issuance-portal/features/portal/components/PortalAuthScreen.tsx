@@ -22,7 +22,7 @@ interface PortalAuthScreenProps {
 
 const nextRouteForRole = (role: "admin" | "issuer" | "investor") => {
   if (role === "admin") {
-    return "/admin";
+    return "/";
   }
 
   if (role === "issuer") {

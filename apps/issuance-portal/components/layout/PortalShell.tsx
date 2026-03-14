@@ -41,12 +41,6 @@ export function PortalShell({ children }: PortalShellProps) {
       hidden: user?.role !== 'issuer',
       matches: (value: string) => value === '/issuer/review',
     },
-    {
-      href: '/admin',
-      label: 'Admin',
-      hidden: user?.role !== 'admin',
-      matches: (value: string) => value === '/admin',
-    },
   ].filter((item) => !item.hidden);
 
   return (

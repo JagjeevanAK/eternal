@@ -35,12 +35,11 @@ export function SignupForm({
   const [email, setEmail] = useState("");
   const [challengeSent, setChallengeSent] = useState(false);
   const [code, setCode] = useState("");
-  const [codeHint, setCodeHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const redirectTarget = searchParams.get("next") ?? "/";
+  const redirectTarget = searchParams.get("next") ?? "/kyc";
 
   useEffect(() => {
     if (!user) {
@@ -67,7 +66,6 @@ export function SignupForm({
       setChallengeSent(true);
       setEmail(response.user.email);
       setCode(otpResponse.deliveryMode === "local" ? "000000" : "");
-      setCodeHint(otpResponse.codeHint);
       setMessage(
         response.created
           ? "Investor account created. Verify the OTP to continue."
@@ -116,7 +114,6 @@ export function SignupForm({
 
     try {
       const response = await requestOtp(email.trim());
-      setCodeHint(response.codeHint);
       setCode(response.deliveryMode === "local" ? "000000" : "");
       setMessage("A fresh OTP challenge is ready.");
     } catch (otpError) {
@@ -148,7 +145,7 @@ export function SignupForm({
           </div>
           <CardTitle className="text-xl">Create your investor account</CardTitle>
           <CardDescription>
-            Sign up with your name and email. OTP verification completes access.
+            Sign up with your name and email. OTP verification then takes you to wallet and KYC setup.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -196,8 +193,6 @@ export function SignupForm({
                   />
                 </Field>
               ) : null}
-
-              {codeHint ? <FieldDescription>{codeHint}</FieldDescription> : null}
               {message ? (
                 <FieldDescription className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-emerald-700">
                   {message}
@@ -237,7 +232,7 @@ export function SignupForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        Seeded demo accounts do not need signup. Use the login page with OTP `000000`.
+        Seeded demo accounts do not need signup. Use the login page instead.
       </FieldDescription>
     </div>
   );

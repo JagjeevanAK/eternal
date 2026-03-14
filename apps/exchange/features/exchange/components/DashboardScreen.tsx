@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Bell, Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Bell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/lib/product-api";
 import { AuthGate } from "@/features/exchange/components/AuthGate";
@@ -50,16 +49,6 @@ export function DashboardScreen() {
           eyebrow="Workspace"
           title={`Welcome back${user ? `, ${user.fullName}` : ""}`}
           description="Track account readiness, capital, and live offerings from a routed investor dashboard instead of one long exchange page."
-          actions={
-            <>
-              <Button asChild variant="outline">
-                <Link href="/marketplace">Browse marketplace</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/portfolio">Open portfolio</Link>
-              </Button>
-            </>
-          }
         />
 
         {error ? <Notice tone="error">{error}</Notice> : null}
@@ -145,18 +134,6 @@ export function DashboardScreen() {
                       />
                     )}
                   </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Button asChild variant="outline">
-                      <Link href="/kyc">
-                        <Wallet className="h-4 w-4" />
-                        KYC and wallet
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <Link href="/payments">Payments queue</Link>
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
 
@@ -236,15 +213,6 @@ export function DashboardScreen() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button asChild variant="outline">
-                <Link href="/orders">
-                  Review all orders
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
             </div>
           </>
         )}

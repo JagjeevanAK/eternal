@@ -21,6 +21,7 @@ import {
   truncateAddress,
 } from "@/features/exchange/lib/format";
 import type { PortfolioResponse, PropertyDetailResponse } from "@/features/exchange/types";
+import { cn } from "@/lib/utils";
 
 const toPositiveInteger = (value: string) => {
   const parsed = Number(value);
@@ -41,6 +42,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
   const [sellUnits, setSellUnits] = useState("");
   const [sellPrice, setSellPrice] = useState("");
   const [tradeUnits, setTradeUnits] = useState<Record<string, string>>({});
+  const [tradeTab, setTradeTab] = useState<"primary" | "secondary">("primary");
 
   const loadProperty = useCallback(async () => {
     setLoading(true);
@@ -106,11 +108,18 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
     (selectedHolding?.units ?? 0) - (selectedHolding?.listedUnits ?? 0),
   );
   const userCanTrade = user?.role === "investor" && user.kycStatus === "approved";
+  const secondaryAvailable = Boolean((state?.listings.length ?? 0) || selectedHolding);
 
   const primaryAmount = useMemo(
     () => (toPositiveInteger(primaryUnits) ?? 0) * (property?.unitPriceInrMinor ?? 0),
     [primaryUnits, property?.unitPriceInrMinor],
   );
+
+  useEffect(() => {
+    if (!secondaryAvailable && tradeTab === "secondary") {
+      setTradeTab("primary");
+    }
+  }, [secondaryAvailable, tradeTab]);
 
   async function runAction(
     key: string,
@@ -349,138 +358,6 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
               )}
             </CardContent>
           </Card>
-        </section>
-
-        <aside className="space-y-6">
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-2xl">Primary issue</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm leading-6 text-muted-foreground">
-                Approved investor accounts can create a primary order here and then complete the mock payment from the Payments route.
-              </p>
-              {userCanTrade ? (
-                <form onSubmit={handlePrimaryOrder} className="space-y-3">
-                  <Input
-                    value={primaryUnits}
-                    onChange={(event) => setPrimaryUnits(event.target.value)}
-                    inputMode="numeric"
-                    placeholder="Units"
-                  />
-                  <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-muted-foreground">
-                    Estimated payment{" "}
-                    <span className="font-semibold text-foreground">{formatInr(primaryAmount)}</span>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={pendingAction !== null}>
-                    {pendingAction === "primary-order" ? "Creating order..." : "Create primary order"}
-                  </Button>
-                </form>
-              ) : (
-                <EmptyState
-                  title={user ? "Trading locked" : "Sign in required"}
-                  description={
-                    user
-                      ? "Investor accounts need approved KYC before placing orders."
-                      : "Sign in as an investor to create a primary order."
-                  }
-                />
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-2xl">Secondary listings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {userCanTrade ? (
-                <form onSubmit={handleCreateListing} className="space-y-3 rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Input
-                      value={sellUnits}
-                      onChange={(event) => setSellUnits(event.target.value)}
-                      inputMode="numeric"
-                      placeholder={`Units to list${availableToList ? ` (max ${availableToList})` : ""}`}
-                    />
-                    <Input
-                      value={sellPrice}
-                      onChange={(event) => setSellPrice(event.target.value)}
-                      inputMode="numeric"
-                      placeholder="Price per unit"
-                    />
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {portfolioLoading
-                      ? "Checking available holdings..."
-                      : selectedHolding
-                        ? `Available to list: ${formatUnits(availableToList)} of ${formatUnits(selectedHolding.units)} units.`
-                        : "No holdings detected for this asset yet."}
-                  </p>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    className="w-full"
-                    disabled={pendingAction !== null || !selectedHolding}
-                  >
-                    {pendingAction === "create-listing" ? "Publishing..." : "Publish secondary listing"}
-                  </Button>
-                </form>
-              ) : null}
-
-              {state.listings.length ? (
-                state.listings.map((listing) => {
-                  const disabled =
-                    pendingAction !== null || !userCanTrade || listing.sellerId === user?.id;
-
-                  return (
-                    <div
-                      key={listing.id}
-                      className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-medium text-foreground">{listing.sellerName}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {formatUnits(listing.unitsRemaining)} units at {formatInr(listing.pricePerUnitInrMinor)} each
-                          </p>
-                        </div>
-                        <StatusBadge value={listing.status} />
-                      </div>
-                      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-                        <Input
-                          value={tradeUnits[listing.id] ?? "1"}
-                          onChange={(event) =>
-                            setTradeUnits((current) => ({
-                              ...current,
-                              [listing.id]: event.target.value,
-                            }))
-                          }
-                          inputMode="numeric"
-                        />
-                        <Button
-                          type="button"
-                          onClick={() => void handleBuyListing(listing.id)}
-                          disabled={disabled}
-                        >
-                          {listing.sellerId === user?.id
-                            ? "Your listing"
-                            : pendingAction === `buy-listing:${listing.id}`
-                              ? "Creating..."
-                              : "Buy listing"}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <EmptyState
-                  title="No active listings"
-                  description="There are no live seller offers for this asset yet."
-                />
-              )}
-            </CardContent>
-          </Card>
 
           <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
             <CardHeader>
@@ -525,6 +402,167 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                   title="No completed trades"
                   description="Settled secondary fills will appear here once buyers complete payment."
                 />
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        <aside className="space-y-6">
+          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle className="text-2xl">Trade</CardTitle>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTradeTab("primary")}
+                    className={cn(
+                      "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                      tradeTab === "primary"
+                        ? "border-primary/20 bg-primary/10 text-primary"
+                        : "border-white/70 bg-white/80 text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Primary
+                  </button>
+                  {secondaryAvailable ? (
+                    <button
+                      type="button"
+                      onClick={() => setTradeTab("secondary")}
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                        tradeTab === "secondary"
+                          ? "border-primary/20 bg-primary/10 text-primary"
+                          : "border-white/70 bg-white/80 text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      Secondary
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {tradeTab === "primary" ? (
+                <>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Approved investor accounts can create a primary order here and then complete the mock payment from the Payments route.
+                  </p>
+                  {userCanTrade ? (
+                    <form onSubmit={handlePrimaryOrder} className="space-y-3">
+                      <Input
+                        value={primaryUnits}
+                        onChange={(event) => setPrimaryUnits(event.target.value)}
+                        inputMode="numeric"
+                        placeholder="Units"
+                      />
+                      <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-muted-foreground">
+                        Estimated payment{" "}
+                        <span className="font-semibold text-foreground">{formatInr(primaryAmount)}</span>
+                      </div>
+                      <Button type="submit" className="w-full" disabled={pendingAction !== null}>
+                        {pendingAction === "primary-order" ? "Creating order..." : "Create primary order"}
+                      </Button>
+                    </form>
+                  ) : (
+                    <EmptyState
+                      title={user ? "Trading locked" : "Sign in required"}
+                      description={
+                        user
+                          ? "Investor accounts need approved KYC before placing orders."
+                          : "Sign in as an investor to create a primary order."
+                      }
+                    />
+                  )}
+                </>
+              ) : (
+                <>
+                  {userCanTrade ? (
+                    <form onSubmit={handleCreateListing} className="space-y-3 rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Input
+                          value={sellUnits}
+                          onChange={(event) => setSellUnits(event.target.value)}
+                          inputMode="numeric"
+                          placeholder={`Units to list${availableToList ? ` (max ${availableToList})` : ""}`}
+                        />
+                        <Input
+                          value={sellPrice}
+                          onChange={(event) => setSellPrice(event.target.value)}
+                          inputMode="numeric"
+                          placeholder="Price per unit"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {portfolioLoading
+                          ? "Checking available holdings..."
+                          : selectedHolding
+                            ? `Available to list: ${formatUnits(availableToList)} of ${formatUnits(selectedHolding.units)} units.`
+                            : "No holdings detected for this asset yet."}
+                      </p>
+                      <Button
+                        type="submit"
+                        variant="outline"
+                        className="w-full"
+                        disabled={pendingAction !== null || !selectedHolding}
+                      >
+                        {pendingAction === "create-listing" ? "Publishing..." : "Publish secondary listing"}
+                      </Button>
+                    </form>
+                  ) : null}
+
+                  {state.listings.length ? (
+                    state.listings.map((listing) => {
+                      const disabled =
+                        pendingAction !== null || !userCanTrade || listing.sellerId === user?.id;
+
+                      return (
+                        <div
+                          key={listing.id}
+                          className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="font-medium text-foreground">{listing.sellerName}</p>
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {formatUnits(listing.unitsRemaining)} units at {formatInr(listing.pricePerUnitInrMinor)} each
+                              </p>
+                            </div>
+                            <StatusBadge value={listing.status} />
+                          </div>
+                          <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+                            <Input
+                              value={tradeUnits[listing.id] ?? "1"}
+                              onChange={(event) =>
+                                setTradeUnits((current) => ({
+                                  ...current,
+                                  [listing.id]: event.target.value,
+                                }))
+                              }
+                              inputMode="numeric"
+                            />
+                            <Button
+                              type="button"
+                              onClick={() => void handleBuyListing(listing.id)}
+                              disabled={disabled}
+                            >
+                              {listing.sellerId === user?.id
+                                ? "Your listing"
+                                : pendingAction === `buy-listing:${listing.id}`
+                                  ? "Creating..."
+                                  : "Buy listing"}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <EmptyState
+                      title="No active listings"
+                      description="There are no live seller offers for this asset yet."
+                    />
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

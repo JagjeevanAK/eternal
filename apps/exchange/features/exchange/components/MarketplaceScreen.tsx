@@ -4,18 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Building2, MapPin, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/product-api";
 import { EmptyState, Notice, ScreenHeader } from "@/features/exchange/components/ExchangePrimitives";
 import { StatusBadge } from "@/features/exchange/components/StatusBadge";
-import { useSession } from "@/features/exchange/context/SessionContext";
 import { formatInr, formatPercent } from "@/features/exchange/lib/format";
 import type { AssetClass, PropertySummary } from "@/features/exchange/types";
 
 export function MarketplaceScreen() {
-  const { user } = useSession();
   const [properties, setProperties] = useState<PropertySummary[]>([]);
   const [assetFilter, setAssetFilter] = useState<"all" | AssetClass>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,22 +82,6 @@ export function MarketplaceScreen() {
         eyebrow="Marketplace"
         title="Browse approved live assets"
         description="Explore primary offerings and active secondary liquidity from a dedicated market route instead of a single consolidated exchange screen."
-        actions={
-          user ? (
-            <Button asChild>
-              <Link href="/dashboard">Open dashboard</Link>
-            </Button>
-          ) : (
-            <>
-              <Button asChild variant="outline">
-                <Link href="/signup">Create account</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/login">Investor sign in</Link>
-              </Button>
-            </>
-          )
-        }
       />
 
       {error ? <Notice tone="error">{error}</Notice> : null}

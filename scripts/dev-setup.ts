@@ -6,6 +6,7 @@ const LOCAL_RPC_URL = "http://127.0.0.1:8899";
 const API_URL = "http://127.0.0.1:4000";
 const EXCHANGE_URL = "http://localhost:3000";
 const ISSUANCE_URL = "http://localhost:3001";
+const ADMIN_URL = "http://localhost:3002";
 const POLL_INTERVAL_MS = 500;
 const RPC_TIMEOUT_MS = 60_000;
 const API_TIMEOUT_MS = 20_000;
@@ -171,8 +172,10 @@ let api: ReturnType<typeof Bun.spawn> | null = null;
 let worker: ReturnType<typeof Bun.spawn> | null = null;
 let exchange: ReturnType<typeof Bun.spawn> | null = null;
 let issuance: ReturnType<typeof Bun.spawn> | null = null;
+let admin: ReturnType<typeof Bun.spawn> | null = null;
 
 const cleanup = () => {
+  stopProcess(admin);
   stopProcess(issuance);
   stopProcess(exchange);
   stopProcess(worker);
@@ -228,9 +231,14 @@ try {
   issuance = spawnLongRunning([bunBin, "run", "dev:issuance"], ROOT_DIR);
   await waitForHttp(ISSUANCE_URL, APP_TIMEOUT_MS, issuance, "Issuance portal");
 
+  console.log(`Starting admin portal at ${ADMIN_URL}...`);
+  admin = spawnLongRunning([bunBin, "run", "dev:admin"], ROOT_DIR);
+  await waitForHttp(ADMIN_URL, APP_TIMEOUT_MS, admin, "Admin portal");
+
   console.log("Local demo is ready.");
   console.log(`Exchange UI: ${EXCHANGE_URL}`);
   console.log(`Issuance Portal: ${ISSUANCE_URL}`);
+  console.log(`Admin Portal: ${ADMIN_URL}`);
   console.log(`API: ${API_URL}`);
   console.log(`RPC: ${LOCAL_RPC_URL}`);
   console.log("Use Phantom on localnet for the easiest browser-wallet flow.");
@@ -243,7 +251,8 @@ try {
   const workerExit = worker.exited.then(() => "worker" as const);
   const exchangeExit = exchange.exited.then(() => "exchange" as const);
   const issuanceExit = issuance.exited.then(() => "issuance" as const);
-  const winner = await Promise.race([validatorExit, apiExit, workerExit, exchangeExit, issuanceExit]);
+  const adminExit = admin.exited.then(() => "admin" as const);
+  const winner = await Promise.race([validatorExit, apiExit, workerExit, exchangeExit, issuanceExit, adminExit]);
 
   cleanup();
 
@@ -274,6 +283,12 @@ try {
   if (winner === "issuance") {
     throw new Error(
       `Issuance portal exited unexpectedly (${issuance.exitCode ?? issuance.signalCode ?? "unknown"}).`,
+    );
+  }
+
+  if (winner === "admin") {
+    throw new Error(
+      `Admin portal exited unexpectedly (${admin.exitCode ?? admin.signalCode ?? "unknown"}).`,
     );
   }
 } catch (error) {

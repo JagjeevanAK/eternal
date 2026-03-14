@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Building2, FileCheck2, Shield } from "lucide-react";
+import { ArrowRight, Building2, FileCheck2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const lanes = [
@@ -14,12 +14,6 @@ const lanes = [
     description: "Create new company-share and real-estate issues, then keep an eye on every draft and review state.",
     href: "/issuer",
     icon: Building2,
-  },
-  {
-    title: "Admin review",
-    description: "Approve KYC records, clear new submissions, and push reviewed assets toward live distribution.",
-    href: "/admin",
-    icon: Shield,
   },
 ];
 
@@ -61,7 +55,7 @@ export default function HomePage() {
             </h2>
             <p className="mt-6 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
               Separate the issuance workflow from the trading surface. Owners can upload proof, issuers can package
-              new offerings, and admins can review compliance without cluttering the exchange app.
+              new offerings before the separate admin portal reviews and approves them.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">

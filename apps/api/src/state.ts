@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "fs";
 import path from "path";
+import { ensureAuthStore, loadAuthSnapshot, replaceAuthSnapshot } from "./auth-store";
 import type {
   Holding,
   KycRecord,
@@ -722,18 +723,93 @@ const normalizeState = (state: LocalState): LocalState => ({
   })),
 });
 
+const hydrateAuthState = (state: LocalState): LocalState => {
+  const authSnapshot = loadAuthSnapshot();
+  if (authSnapshot.users.length === 0 && authSnapshot.sessions.length === 0) {
+    return state;
+  }
+
+  const usersById = new Map(state.users.map((value) => [value.id, value]));
+  const mergedUsers = [...state.users];
+  let usersChanged = false;
+
+  for (const authUser of authSnapshot.users) {
+    const existingUser = usersById.get(authUser.id);
+    if (!existingUser) {
+      mergedUsers.push(authUser);
+      usersById.set(authUser.id, authUser);
+      usersChanged = true;
+
+      if (!state.kycRecords.some((value) => value.userId === authUser.id)) {
+        state.kycRecords.push(
+          kyc(
+            authUser.id,
+            authUser.kycStatus,
+            "",
+            "",
+            "",
+            "",
+            "SQLite-restored auth account awaiting KYC sync",
+          ),
+        );
+      }
+      continue;
+    }
+
+    const mergedUser = {
+      ...existingUser,
+      ...authUser,
+      managedWalletAddress: authUser.managedWalletAddress,
+    };
+
+    if (JSON.stringify(existingUser) !== JSON.stringify(mergedUser)) {
+      const index = mergedUsers.findIndex((value) => value.id === authUser.id);
+      mergedUsers[index] = mergedUser;
+      usersChanged = true;
+    }
+  }
+
+  const mergedSessions = authSnapshot.sessions.filter((value) => usersById.has(value.userId));
+  const sessionsChanged = JSON.stringify(state.sessions) !== JSON.stringify(mergedSessions);
+
+  if (!usersChanged && !sessionsChanged) {
+    return state;
+  }
+
+  return {
+    ...state,
+    users: mergedUsers,
+    sessions: mergedSessions,
+  };
+};
+
 export const ensureStateFile = () => {
   ensureStorageDir();
+  ensureAuthStore();
+  const authSnapshot = loadAuthSnapshot();
 
   if (!existsSync(STATE_PATH)) {
-    writeFileSync(STATE_PATH, JSON.stringify(createSeedState(), null, 2));
+    const seedState = normalizeState(createSeedState());
+    writeFileSync(STATE_PATH, JSON.stringify(seedState, null, 2));
+
+    if (authSnapshot.users.length === 0 && authSnapshot.sessions.length === 0) {
+      replaceAuthSnapshot(seedState.users, seedState.sessions);
+    }
+
+    return;
+  }
+
+  if (authSnapshot.users.length === 0 && authSnapshot.sessions.length === 0) {
+    const parsed = JSON.parse(readFileSync(STATE_PATH, "utf8")) as LocalState;
+    const normalized = normalizeState(parsed);
+    replaceAuthSnapshot(normalized.users, normalized.sessions);
   }
 };
 
 export const readState = (): LocalState => {
   ensureStateFile();
   const parsed = JSON.parse(readFileSync(STATE_PATH, "utf8")) as LocalState;
-  const normalized = normalizeState(parsed);
+  const normalized = hydrateAuthState(normalizeState(parsed));
 
   if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
     writeState(normalized);
@@ -744,10 +820,12 @@ export const readState = (): LocalState => {
 
 export const writeState = (state: LocalState) => {
   ensureStorageDir();
+  ensureAuthStore();
   const normalized = normalizeState(state);
   const tempPath = `${STATE_PATH}.tmp`;
   writeFileSync(tempPath, JSON.stringify(normalized, null, 2));
   renameSync(tempPath, STATE_PATH);
+  replaceAuthSnapshot(normalized.users, normalized.sessions);
 };
 
 export const mutateState = <T>(mutator: (state: LocalState) => T): T => {

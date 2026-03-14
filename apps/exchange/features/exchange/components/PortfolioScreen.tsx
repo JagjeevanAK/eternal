@@ -7,13 +7,12 @@ import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/product-api";
 import { AuthGate } from "@/features/exchange/components/AuthGate";
 import { EmptyState, Notice, ScreenHeader } from "@/features/exchange/components/ExchangePrimitives";
-import { StatusBadge } from "@/features/exchange/components/StatusBadge";
 import { useSession } from "@/features/exchange/context/SessionContext";
-import { formatDate, formatInr, formatUnits, truncateAddress } from "@/features/exchange/lib/format";
+import { formatInr, formatUnits, truncateAddress } from "@/features/exchange/lib/format";
 import type { PortfolioResponse } from "@/features/exchange/types";
 
 export function PortfolioScreen() {
-  const { token } = useSession();
+  const { token, user } = useSession();
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +103,30 @@ export function PortfolioScreen() {
           </Card>
         ) : (
           <>
+            <section>
+              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+                <CardContent className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      Wallet funds
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
+                      {formatInr(user?.cashBalanceInrMinor ?? 0)}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      Available local INR balance for upcoming primary and secondary payments.
+                    </p>
+                  </div>
+                  <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-muted-foreground">
+                    Managed wallet{" "}
+                    <span className="font-semibold text-foreground">
+                      {truncateAddress(user?.managedWalletAddress ?? null)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             <section className="space-y-4">
               {portfolio.holdings.length ? (
                 portfolio.holdings.map((holding) => {
@@ -223,74 +246,6 @@ export function PortfolioScreen() {
               )}
             </section>
 
-            <section className="grid gap-6 xl:grid-cols-2">
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Active listings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {portfolio.listings.length ? (
-                    portfolio.listings.map((listing) => (
-                      <div
-                        key={listing.id}
-                        className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="font-medium text-foreground">{listing.property?.name}</p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              {formatUnits(listing.unitsRemaining)} of {formatUnits(listing.unitsListed)} units remaining
-                            </p>
-                          </div>
-                          <StatusBadge value={listing.status} />
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <EmptyState
-                      title="No active listings"
-                      description="Publish sell-side liquidity from a holding to populate this section."
-                    />
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Distributions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {portfolio.distributions.length ? (
-                    portfolio.distributions.map((distribution) => (
-                      <div
-                        key={distribution.id}
-                        className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="font-medium text-foreground">{distribution.property.name}</p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              Payable {formatDate(distribution.payableAt)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-foreground">
-                              {formatInr(distribution.amountInrMinor)}
-                            </p>
-                            <StatusBadge value={distribution.status} />
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <EmptyState
-                      title="No announced distributions"
-                      description="Cash distributions created by the platform will appear here."
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </section>
           </>
         )}
       </div>
