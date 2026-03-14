@@ -702,6 +702,13 @@ const normalizeState = (state: LocalState): LocalState => ({
     settlementSignature: value.settlementSignature ?? null,
     onChainTradeAddress: value.onChainTradeAddress ?? null,
   })),
+  payments: state.payments.map((value) => ({
+    ...value,
+    paymentSignature: value.paymentSignature ?? null,
+    paymentWalletAddress: value.paymentWalletAddress ?? null,
+    paymentLamports: value.paymentLamports ?? null,
+    pricingSnapshotInrPerSolMinor: value.pricingSnapshotInrPerSolMinor ?? null,
+  })),
   listings: state.listings.map((value) => ({
     ...value,
     sequenceId: value.sequenceId ?? null,

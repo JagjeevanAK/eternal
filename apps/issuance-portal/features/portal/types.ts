@@ -277,7 +277,7 @@ export interface PaymentIntent {
   orderId: string;
   userId: string;
   amountInrMinor: number;
-  method: "mock_upi";
+  method: "mock_upi" | "solana_localnet";
   status: PaymentStatus;
   reference: string;
   createdAt: string;

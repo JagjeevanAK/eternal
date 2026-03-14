@@ -254,6 +254,11 @@ const ensurePlatform = async (state: LocalState) => {
   return { address, account };
 };
 
+export const getPlatformTreasuryAddress = async (state: LocalState) => {
+  const { account } = await ensurePlatform(state);
+  return account.treasury.toBase58();
+};
+
 const ensureIssuer = async (state: LocalState, userId: string) => {
   const user = getUser(state, userId);
   const signer = getManagedWallet(user.id);

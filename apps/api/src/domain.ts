@@ -24,6 +24,7 @@ export type OrderStatus =
   | "failed";
 
 export type PaymentStatus = "pending" | "paid" | "settled" | "failed";
+export type PaymentMethod = "mock_upi" | "solana_localnet";
 
 export type ListingStatus = "active" | "partially_filled" | "filled" | "cancelled";
 
@@ -184,11 +185,15 @@ export interface PaymentIntent {
   orderId: string;
   userId: string;
   amountInrMinor: number;
-  method: "mock_upi";
+  method: PaymentMethod;
   status: PaymentStatus;
   reference: string;
   createdAt: string;
   settledAt: string | null;
+  paymentSignature: string | null;
+  paymentWalletAddress: string | null;
+  paymentLamports: number | null;
+  pricingSnapshotInrPerSolMinor: number | null;
 }
 
 export interface Listing {

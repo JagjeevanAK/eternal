@@ -19,6 +19,12 @@ export const formatInr = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
+export const formatSol = (value: number) =>
+  `${new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: value >= 10 ? 2 : 4,
+  }).format(value)} SOL`;
+
 export const formatPercent = (bps: number) => `${(bps / 100).toFixed(2)}%`;
 
 export const formatDate = (value: string | null) =>
@@ -34,3 +40,15 @@ export const formatRole = (value: string) =>
     .split("_")
     .map((part) => part[0]?.toUpperCase() + part.slice(1))
     .join(" ");
+
+export const truncateAddress = (value: string | null, visible = 4) => {
+  if (!value) {
+    return "Pending";
+  }
+
+  if (value.length <= visible * 2 + 3) {
+    return value;
+  }
+
+  return `${value.slice(0, visible)}...${value.slice(-visible)}`;
+};

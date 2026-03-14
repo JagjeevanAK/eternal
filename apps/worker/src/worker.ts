@@ -60,8 +60,10 @@ const processPrimaryOrder = async (state: LocalState, job: QueueJob) => {
 
   const { signature } = await settlePrimaryOrderOnChain(state, order);
   const issuerNet = order.grossAmountInrMinor - order.feeAmountInrMinor;
-  issuer.cashBalanceInrMinor += issuerNet;
-  state.platformTreasuryInrMinor += order.feeAmountInrMinor;
+  if (payment.method === "mock_upi") {
+    issuer.cashBalanceInrMinor += issuerNet;
+    state.platformTreasuryInrMinor += order.feeAmountInrMinor;
+  }
 
   addNotification(
     state,
@@ -105,8 +107,10 @@ const processSecondaryTrade = async (state: LocalState, job: QueueJob) => {
 
   const property = getPropertyById(state, order.propertyId);
   const { signature, trade } = await settleSecondaryOrderOnChain(state, order);
-  seller.cashBalanceInrMinor += order.grossAmountInrMinor - order.feeAmountInrMinor;
-  state.platformTreasuryInrMinor += order.feeAmountInrMinor;
+  if (payment.method === "mock_upi") {
+    seller.cashBalanceInrMinor += order.grossAmountInrMinor - order.feeAmountInrMinor;
+    state.platformTreasuryInrMinor += order.feeAmountInrMinor;
+  }
 
   if (!state.trades.find((value) => value.onChainAddress === trade.onChainAddress)) {
     state.trades.unshift(trade);

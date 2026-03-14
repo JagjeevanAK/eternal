@@ -15,6 +15,12 @@ export const formatCompactInr = (value: number) =>
     maximumFractionDigits: 1,
   }).format(value);
 
+export const formatSol = (value: number) =>
+  `${new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: value >= 10 ? 2 : 4,
+  }).format(value)} SOL`;
+
 export const formatPercent = (bps: number) => `${(bps / 100).toFixed(2)}%`;
 
 export const formatUnits = (value: number) =>

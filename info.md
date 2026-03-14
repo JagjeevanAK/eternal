@@ -24,7 +24,7 @@ What is **not** on localnet:
 
 - email/OTP auth
 - KYC form submission workflow itself
-- mock INR payment capture
+- mock INR payment capture as a fallback rail
 - SQLite/session storage
 - a real SPL token mint / token account based issuance flow
 
@@ -313,34 +313,25 @@ or add those values in your environment before running `bun dev`.
 Important:
 
 - this funds the Phantom wallet with **localnet SOL**
-- it is useful to prove the wallet is real and connected to localnet
-- but it does **not** increase buying power inside the exchange app today
+- if that same wallet is bound on the exchange KYC page, it can now be used to pay pending orders
+- the exchange keeps prices in INR in the UI and maps them to SOL at the demo quote of `1 SOL = Rs. 8190`
+- secondary listings should be created from investor accounts that have already bound a wallet, otherwise Phantom settlement for that listing will be unavailable
 
-Why:
+How it works now:
 
-- the app currently buys assets using **mock INR balance**
-- payment capture happens off-chain first
-- after that, settlement is pushed to Solana localnet
+1. order value is still quoted in INR in the app
+2. the Payments page shows the SOL equivalent for that order
+3. Phantom signs a localnet transaction
+4. for primary orders, SOL is split between issuer settlement and platform fee
+5. for secondary orders, SOL is split between seller proceeds and platform fee
+6. after the API verifies that localnet transaction, the worker settles holdings/listings/trades on-chain
 
-So there are two different balances in the current architecture:
-
-1. Phantom/localnet SOL balance  
-Used for wallet presence and localnet wallet activity
-
-2. Exchange mock INR balance  
-Used by the app to pay for primary and secondary orders
-
-If your goal is only:
+So `solana airdrop` is now enough for two demo goals:
 
 - "show Phantom has money on localnet"
+- "actually pay for exchange orders from Phantom on localnet"
 
-then `solana airdrop` is enough.
-
-If your goal is:
-
-- "actually buy assets in this app"
-
-then you need enough **mock INR balance** on the investor account, not just SOL in Phantom.
+The old mock INR rail still exists as a fallback.
 
 ## 9. Notes
 
@@ -349,6 +340,8 @@ then you need enough **mock INR balance** on the investor account, not just SOL 
 - Secondary settlements write both a settlement signature and a trade record account on-chain.
 - Wallet binding is synced into the on-chain investor registry.
 - KYC approval is used to allowlist the investor in the program registry.
-- Mock INR payment capture happens off-chain first, and only then triggers localnet settlement.
+- Phantom/localnet SOL payments are verified on localnet before settlement runs.
+- Mock INR payment capture still exists as an off-chain fallback.
+- The issuer portal now surfaces property/offering addresses plus submission/publication signatures so issuance activity is easier to prove on localnet.
 - Asset issuance in this repo is program-account based, not SPL-token based.
 - Some UI sections show shortened addresses, so copy the full value where available before using CLI.

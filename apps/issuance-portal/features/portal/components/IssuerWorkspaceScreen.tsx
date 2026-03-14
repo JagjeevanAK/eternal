@@ -7,7 +7,8 @@ import { apiFetch } from "@/lib/product-api";
 import { AuthGate } from "@/features/portal/components/AuthGate";
 import { StatusBadge } from "@/features/portal/components/StatusBadge";
 import { useSession } from "@/features/portal/context/SessionContext";
-import { formatFileSize, formatInr, formatPercent } from "@/features/portal/lib/format";
+import { formatDate, formatFileSize, formatInr, formatPercent, formatSol, truncateAddress } from "@/features/portal/lib/format";
+import { SOL_PRICE_INR_MINOR, inrMinorToSol } from "@/features/portal/lib/solana-pricing";
 import type { IssuerProjectsResponse } from "@/features/portal/types";
 
 const MAX_FILES = 5;
@@ -61,6 +62,10 @@ export function IssuerWorkspaceScreen() {
   const [formData, setFormData] = useState(emptyForm);
   const [files, setFiles] = useState<File[]>([]);
   const [fileInputVersion, setFileInputVersion] = useState(0);
+  const minimumInvestmentInrMinor = Number(formData.minimumInvestmentInrMinor) || 0;
+  const unitPriceInrMinor = Number(formData.unitPriceInrMinor) || 0;
+  const totalUnits = Number(formData.totalUnits) || 0;
+  const projectedIssueValueInrMinor = unitPriceInrMinor * totalUnits;
 
   const load = useCallback(async () => {
     if (!token) {
@@ -203,6 +208,32 @@ export function IssuerWorkspaceScreen() {
                       {property.availableUnits} units open
                     </div>
                   </div>
+                  <div className="mt-4 rounded-2xl border border-border bg-card px-4 py-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Localnet issue record
+                    </p>
+                    <div className="mt-3 grid gap-3 md:grid-cols-2">
+                      <div className="rounded-xl border border-border bg-background px-3 py-3 text-sm text-foreground">
+                        <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Property account</p>
+                        <p className="mt-2 font-medium">{truncateAddress(property.onChainPropertyAddress)}</p>
+                      </div>
+                      <div className="rounded-xl border border-border bg-background px-3 py-3 text-sm text-foreground">
+                        <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Offering account</p>
+                        <p className="mt-2 font-medium">{truncateAddress(property.onChainOfferingAddress)}</p>
+                      </div>
+                      <div className="rounded-xl border border-border bg-background px-3 py-3 text-sm text-foreground">
+                        <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Submission signature</p>
+                        <p className="mt-2 font-medium">{truncateAddress(property.submissionSignature, 6)}</p>
+                      </div>
+                      <div className="rounded-xl border border-border bg-background px-3 py-3 text-sm text-foreground">
+                        <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Publication signature</p>
+                        <p className="mt-2 font-medium">{truncateAddress(property.publicationSignature, 6)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Last chain sync {formatDate(property.lastChainSyncAt)}.
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -217,6 +248,36 @@ export function IssuerWorkspaceScreen() {
             <p className="mt-2 text-xs text-muted-foreground">
               <RequiredMark /> Required fields
             </p>
+
+            <div className="mt-6 rounded-[1.6rem] border border-emerald-200/70 bg-emerald-50/80 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Localnet settlement preview
+              </p>
+              <p className="mt-2 text-sm leading-6 text-emerald-900">
+                Issuance pricing remains in INR, but the localnet demo rail maps the same values to SOL at
+                {" "}1 SOL = {formatInr(SOL_PRICE_INR_MINOR)}.
+              </p>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="rounded-2xl border border-emerald-200/80 bg-white/80 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-emerald-700">Unit price</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">
+                    {formatInr(unitPriceInrMinor)} · {formatSol(inrMinorToSol(unitPriceInrMinor))}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-emerald-200/80 bg-white/80 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-emerald-700">Minimum ticket</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">
+                    {formatInr(minimumInvestmentInrMinor)} · {formatSol(inrMinorToSol(minimumInvestmentInrMinor))}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-emerald-200/80 bg-white/80 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-emerald-700">Full issue value</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">
+                    {formatInr(projectedIssueValueInrMinor)} · {formatSol(inrMinorToSol(projectedIssueValueInrMinor))}
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="mt-6 grid gap-4">
               <label className="text-sm font-medium text-muted-foreground">

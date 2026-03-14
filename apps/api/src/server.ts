@@ -32,8 +32,14 @@ import {
   writeVerificationAttachmentFile,
   writeState,
 } from "./state";
-import { createListingOnChain, syncStateToChain } from "./chain";
+import { createListingOnChain, getPlatformTreasuryAddress, syncStateToChain } from "./chain";
 import { minimumPrimaryUnits } from "./investment";
+import {
+  buildSolQuote,
+  SOLANA_QUOTE_SOURCE,
+  SOL_PRICE_INR_MINOR,
+  verifyLocalnetSolTransfers,
+} from "./solana-rail";
 import {
   approveVerificationRequest,
   approveVerificationRequestAsAdmin,
@@ -252,7 +258,226 @@ const createPayment = (order: Order): PaymentIntent => ({
   reference: `UPI-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
   createdAt: new Date().toISOString(),
   settledAt: null,
+  paymentSignature: null,
+  paymentWalletAddress: null,
+  paymentLamports: null,
+  pricingSnapshotInrPerSolMinor: null,
 });
+
+type SolanaQuoteRecipientRole = "issuer" | "seller" | "platform_fee";
+
+interface SolanaQuoteRecipient {
+  role: SolanaQuoteRecipientRole;
+  label: string;
+  address: string;
+  amountInrMinor: number;
+  amountLamports: number;
+  amountSol: number;
+}
+
+interface SolanaPaymentQuote {
+  amountInrMinor: number;
+  amountLamports: number;
+  amountSol: number;
+  inrPerSolMinor: number;
+  source: typeof SOLANA_QUOTE_SOURCE;
+  available: boolean;
+  unavailableReason: string | null;
+  recipients: SolanaQuoteRecipient[];
+}
+
+const isValidSolanaAddress = (value: string | null | undefined) => {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    new PublicKey(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const buildSolanaPaymentQuote = (
+  state: LocalState,
+  payment: PaymentIntent,
+  treasuryAddress: string | null,
+): SolanaPaymentQuote => {
+  const order = state.orders.find((value) => value.id === payment.orderId);
+  const grossQuote = buildSolQuote(payment.amountInrMinor);
+
+  if (!order) {
+    return {
+      ...grossQuote,
+      available: false,
+      unavailableReason: "Order context is missing for this payment intent.",
+      recipients: [],
+    };
+  }
+
+  if (!treasuryAddress || !isValidSolanaAddress(treasuryAddress)) {
+    return {
+      ...grossQuote,
+      available: false,
+      unavailableReason: "Platform treasury is not ready for localnet SOL settlement.",
+      recipients: [],
+    };
+  }
+
+  const feeInrMinor = Math.max(0, order.feeAmountInrMinor);
+  const feeLamports = Math.min(grossQuote.amountLamports, buildSolQuote(feeInrMinor).amountLamports);
+  const netInrMinor = Math.max(0, payment.amountInrMinor - feeInrMinor);
+  const netLamports = Math.max(0, grossQuote.amountLamports - feeLamports);
+
+  let recipientWallet: string | null = null;
+  let unavailableReason: string | null = null;
+  let recipientRole: SolanaQuoteRecipientRole = "issuer";
+  let recipientLabel = "Issuer settlement";
+
+  if (order.kind === "primary") {
+    const property = state.properties.find((value) => value.id === order.propertyId);
+    const issuer = property
+      ? state.users.find((value) => value.id === property.issuerId && value.role === "issuer")
+      : null;
+    recipientWallet = issuer?.externalWalletAddress ?? issuer?.managedWalletAddress ?? null;
+    recipientRole = "issuer";
+    recipientLabel = "Issuer settlement";
+
+    if (!recipientWallet) {
+      unavailableReason = "Issuer settlement wallet is not available yet.";
+    }
+  } else {
+    const seller = order.sellerId
+      ? state.users.find((value) => value.id === order.sellerId && value.role === "investor")
+      : null;
+    recipientWallet = seller?.externalWalletAddress ?? null;
+    recipientRole = "seller";
+    recipientLabel = "Seller proceeds";
+
+    if (!recipientWallet) {
+      unavailableReason = "Seller has not bound a wallet for localnet SOL payouts yet.";
+    }
+  }
+
+  if (recipientWallet && !isValidSolanaAddress(recipientWallet)) {
+    unavailableReason = "Settlement wallet is not a valid Solana address.";
+  }
+
+  if (unavailableReason) {
+    return {
+      ...grossQuote,
+      available: false,
+      unavailableReason,
+      recipients: [],
+    };
+  }
+
+  const recipients: SolanaQuoteRecipient[] = [];
+
+  if (recipientWallet && netLamports > 0) {
+    recipients.push({
+      role: recipientRole,
+      label: recipientLabel,
+      address: recipientWallet,
+      amountInrMinor: netInrMinor,
+      amountLamports: netLamports,
+      amountSol: netLamports / 1_000_000_000,
+    });
+  }
+
+  if (feeLamports > 0) {
+    recipients.push({
+      role: "platform_fee",
+      label: "Platform fee",
+      address: treasuryAddress,
+      amountInrMinor: feeInrMinor,
+      amountLamports: feeLamports,
+      amountSol: feeLamports / 1_000_000_000,
+    });
+  }
+
+  return {
+    ...grossQuote,
+    available: recipients.length > 0,
+    unavailableReason: recipients.length > 0 ? null : "This payment does not have any localnet recipients.",
+    recipients,
+  };
+};
+
+const capturePaymentAndQueueSettlement = (
+  state: LocalState,
+  {
+    paymentId,
+    userId,
+    method,
+    paymentSignature = null,
+    paymentWalletAddress = null,
+    paymentLamports = null,
+    pricingSnapshotInrPerSolMinor = null,
+  }: {
+    paymentId: string;
+    userId: string;
+    method: PaymentIntent["method"];
+    paymentSignature?: string | null;
+    paymentWalletAddress?: string | null;
+    paymentLamports?: number | null;
+    pricingSnapshotInrPerSolMinor?: number | null;
+  },
+) => {
+  const payment = state.payments.find((value) => value.id === paymentId && value.userId === userId);
+  if (!payment) {
+    return { error: "Payment not found." } as const;
+  }
+
+  if (payment.status !== "pending") {
+    return { error: "Only pending payments can be marked as paid." } as const;
+  }
+
+  const order = state.orders.find((value) => value.id === payment.orderId);
+  if (!order) {
+    return { error: "Payment is missing its order context." } as const;
+  }
+
+  const currentUser = state.users.find((value) => value.id === userId);
+  if (!currentUser) {
+    return { error: "User not found." } as const;
+  }
+
+  if (method === "mock_upi" && currentUser.cashBalanceInrMinor < payment.amountInrMinor) {
+    return { error: "Insufficient mock INR balance." } as const;
+  }
+
+  if (method === "mock_upi") {
+    currentUser.cashBalanceInrMinor -= payment.amountInrMinor;
+  }
+
+  payment.method = method;
+  payment.status = "paid";
+  payment.paymentSignature = paymentSignature;
+  payment.paymentWalletAddress = paymentWalletAddress;
+  payment.paymentLamports = paymentLamports;
+  payment.pricingSnapshotInrPerSolMinor = pricingSnapshotInrPerSolMinor;
+  order.status = "settlement_pending";
+
+  enqueueJob(
+    state,
+    order.kind === "primary" ? "settle_primary_order" : "settle_secondary_trade",
+    { orderId: order.id, paymentId: payment.id },
+    1500,
+  );
+
+  addNotification(
+    state,
+    currentUser.id,
+    method === "solana_localnet" ? "Localnet SOL payment captured" : "Payment captured",
+    method === "solana_localnet"
+      ? `Wallet payment ${payment.reference} is confirmed on localnet and waiting for settlement.`
+      : `Payment ${payment.reference} is captured and waiting for local settlement.`,
+  );
+
+  return { payment, order } as const;
+};
 
 const createPrimaryOrder = (
   property: PropertyProject,
@@ -812,6 +1037,8 @@ const server = Bun.serve({
         return auth.error!;
       }
 
+      const treasuryAddress = await getPlatformTreasuryAddress(auth.state).catch(() => null);
+
       const payments = auth.state.payments
         .filter((value) => value.userId === auth.actor?.user.id)
         .map((value) => {
@@ -820,6 +1047,7 @@ const server = Bun.serve({
             ...value,
             order,
             property: formatProperty(auth.state, getPropertyById(auth.state, order.propertyId)!),
+            solanaQuote: buildSolanaPaymentQuote(auth.state, value, treasuryAddress),
           };
         })
         .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
@@ -827,7 +1055,100 @@ const server = Bun.serve({
       return json(200, {
         cashBalanceInrMinor: auth.actor.user.cashBalanceInrMinor,
         payments,
+        solanaPaymentConfig: {
+          enabled: Boolean(auth.actor.user.externalWalletAddress && treasuryAddress),
+          treasuryAddress,
+          inrPerSolMinor: SOL_PRICE_INR_MINOR,
+          source: SOLANA_QUOTE_SOURCE,
+        },
       });
+    }
+
+    if (
+      pathname.startsWith("/payments/") &&
+      pathname.endsWith("/pay/solana") &&
+      request.method === "POST"
+    ) {
+      const auth = requireAuth(request);
+      if (auth.error || !auth.actor) {
+        return auth.error!;
+      }
+
+      const paymentId = pathname.replace("/payments/", "").replace("/pay/solana", "");
+      const body = await parseJson<{ signature?: string; walletAddress?: string }>(request);
+      const signature = body?.signature?.trim() ?? "";
+      const walletAddress = body?.walletAddress?.trim() ?? "";
+
+      if (!signature || !walletAddress) {
+        return json(400, { error: "Wallet address and payment signature are required." });
+      }
+
+      const currentUser = auth.state.users.find((value) => value.id === auth.actor.user.id)!;
+      if (!currentUser.externalWalletAddress) {
+        return json(400, { error: "Bind your Phantom wallet before using localnet SOL payments." });
+      }
+
+      if (currentUser.externalWalletAddress !== walletAddress) {
+        return json(400, { error: "The connected wallet does not match the bound investor wallet." });
+      }
+
+      if (
+        auth.state.payments.some(
+          (value) => value.id !== paymentId && value.paymentSignature === signature,
+        )
+      ) {
+        return json(400, { error: "This localnet transaction is already linked to another payment." });
+      }
+
+      const payment = auth.state.payments.find(
+        (value) => value.id === paymentId && value.userId === auth.actor.user.id,
+      );
+      if (!payment) {
+        return json(404, { error: "Payment not found." });
+      }
+
+      const treasuryAddress = await getPlatformTreasuryAddress(auth.state).catch(() => null);
+      const solanaQuote = buildSolanaPaymentQuote(auth.state, payment, treasuryAddress);
+      if (!solanaQuote.available) {
+        return json(400, { error: solanaQuote.unavailableReason ?? "Localnet SOL payment is not ready for this order." });
+      }
+
+      try {
+        await verifyLocalnetSolTransfers({
+          signature,
+          expectedSource: walletAddress,
+          expectedTransfers: solanaQuote.recipients.map((recipient) => ({
+            label: recipient.label,
+            destination: recipient.address,
+            minimumLamports: recipient.amountLamports,
+          })),
+        });
+      } catch (error) {
+        return json(400, {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to verify the localnet wallet payment.",
+        });
+      }
+
+      const result = mutateState((state) =>
+        capturePaymentAndQueueSettlement(state, {
+          paymentId,
+          userId: auth.actor!.user.id,
+          method: "solana_localnet",
+          paymentSignature: signature,
+          paymentWalletAddress: walletAddress,
+          paymentLamports: solanaQuote.amountLamports,
+          pricingSnapshotInrPerSolMinor: solanaQuote.inrPerSolMinor,
+        }),
+      );
+
+      if ("error" in result) {
+        return json(400, result);
+      }
+
+      return json(200, result);
     }
 
     if (pathname.startsWith("/payments/") && pathname.endsWith("/pay") && request.method === "POST") {
@@ -838,45 +1159,13 @@ const server = Bun.serve({
 
       const paymentId = pathname.replace("/payments/", "").replace("/pay", "");
 
-      const result = mutateState((state) => {
-        const payment = state.payments.find(
-          (value) => value.id === paymentId && value.userId === auth.actor?.user.id,
-        );
-        if (!payment) {
-          return { error: "Payment not found." };
-        }
-
-        if (payment.status !== "pending") {
-          return { error: "Only pending payments can be marked as paid." };
-        }
-
-        const order = state.orders.find((value) => value.id === payment.orderId)!;
-        const currentUser = state.users.find((value) => value.id === auth.actor?.user.id)!;
-
-        if (currentUser.cashBalanceInrMinor < payment.amountInrMinor) {
-          return { error: "Insufficient mock INR balance." };
-        }
-
-        currentUser.cashBalanceInrMinor -= payment.amountInrMinor;
-        payment.status = "paid";
-        order.status = "settlement_pending";
-
-        enqueueJob(
-          state,
-          order.kind === "primary" ? "settle_primary_order" : "settle_secondary_trade",
-          { orderId: order.id, paymentId: payment.id },
-          1500,
-        );
-
-        addNotification(
-          state,
-          currentUser.id,
-          "Payment captured",
-          `Payment ${payment.reference} is captured and waiting for local settlement.`,
-        );
-
-        return { payment, order };
-      });
+      const result = mutateState((state) =>
+        capturePaymentAndQueueSettlement(state, {
+          paymentId,
+          userId: auth.actor!.user.id,
+          method: "mock_upi",
+        }),
+      );
 
       if ("error" in result) {
         return json(400, result);
@@ -935,7 +1224,7 @@ const server = Bun.serve({
         state,
         auth.actor.user.id,
         "Primary order created",
-        `${body.units} units are reserved in the order book. Complete the mock payment to settle them on localnet.`,
+        `${body.units} units are reserved in the order book. Complete payment from the Payments route to settle them on localnet.`,
       );
 
       writeState(state);
@@ -954,6 +1243,12 @@ const server = Bun.serve({
 
       if (auth.actor.user.kycStatus !== "approved") {
         return json(400, { error: "KYC approval is required before selling units." });
+      }
+
+      if (!auth.actor.user.externalWalletAddress) {
+        return json(400, {
+          error: "Bind your Phantom wallet before publishing a listing so buyer payments can settle to your wallet.",
+        });
       }
 
       const body = await parseJson<{ propertyId?: string; units?: number; pricePerUnitInrMinor?: number }>(request);
@@ -1047,7 +1342,7 @@ const server = Bun.serve({
         state,
         auth.actor.user.id,
         "Secondary trade created",
-        `${body.units} units are now awaiting payment before localnet settlement.`,
+        `${body.units} units are now awaiting payment from the Payments route before localnet settlement.`,
       );
 
       writeState(state);

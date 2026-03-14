@@ -20,6 +20,7 @@ export type OrderStatus =
   | "failed";
 
 export type PaymentStatus = "pending" | "paid" | "settled" | "failed";
+export type PaymentMethod = "mock_upi" | "solana_localnet";
 
 export type ListingStatus = "active" | "partially_filled" | "filled" | "cancelled";
 
@@ -200,11 +201,43 @@ export interface PaymentIntent {
   orderId: string;
   userId: string;
   amountInrMinor: number;
-  method: "mock_upi";
+  method: PaymentMethod;
   status: PaymentStatus;
   reference: string;
   createdAt: string;
   settledAt: string | null;
+  paymentSignature: string | null;
+  paymentWalletAddress: string | null;
+  paymentLamports: number | null;
+  pricingSnapshotInrPerSolMinor: number | null;
+  solanaQuote?: SolanaQuote;
+}
+
+export interface SolanaQuote {
+  amountInrMinor: number;
+  amountLamports: number;
+  amountSol: number;
+  inrPerSolMinor: number;
+  source: "static_demo_quote";
+  available: boolean;
+  unavailableReason: string | null;
+  recipients: SolanaQuoteRecipient[];
+}
+
+export interface SolanaQuoteRecipient {
+  role: "issuer" | "seller" | "platform_fee";
+  label: string;
+  address: string;
+  amountInrMinor: number;
+  amountLamports: number;
+  amountSol: number;
+}
+
+export interface SolanaPaymentConfig {
+  enabled: boolean;
+  treasuryAddress: string | null;
+  inrPerSolMinor: number;
+  source: "static_demo_quote";
 }
 
 export interface OrderBase {
@@ -249,6 +282,7 @@ export interface OrdersResponse {
 export interface PaymentsResponse {
   cashBalanceInrMinor: number;
   payments: PaymentRecord[];
+  solanaPaymentConfig: SolanaPaymentConfig;
 }
 
 export interface DocumentsResponse {

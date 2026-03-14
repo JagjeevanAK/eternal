@@ -16,11 +16,13 @@ import {
   formatDateTime,
   formatInr,
   formatPercent,
+  formatSol,
   formatUnits,
   minimumPrimaryUnits,
   truncateAddress,
 } from "@/features/exchange/lib/format";
 import type { PortfolioResponse, PropertyDetailResponse } from "@/features/exchange/types";
+import { inrMinorToSol } from "@/lib/solana-pricing";
 import { cn } from "@/lib/utils";
 
 const toPositiveInteger = (value: string) => {
@@ -108,12 +110,14 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
     (selectedHolding?.units ?? 0) - (selectedHolding?.listedUnits ?? 0),
   );
   const userCanTrade = user?.role === "investor" && user.kycStatus === "approved";
+  const hasBoundWallet = Boolean(user?.externalWalletAddress);
   const secondaryAvailable = Boolean((state?.listings.length ?? 0) || selectedHolding);
 
   const primaryAmount = useMemo(
     () => (toPositiveInteger(primaryUnits) ?? 0) * (property?.unitPriceInrMinor ?? 0),
     [primaryUnits, property?.unitPriceInrMinor],
   );
+  const primaryAmountSol = useMemo(() => inrMinorToSol(primaryAmount), [primaryAmount]);
 
   useEffect(() => {
     if (!secondaryAvailable && tradeTab === "secondary") {
@@ -167,7 +171,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
           token,
           body: { propertyId: property.id, units },
         }),
-      `Primary order created for ${formatUnits(units)} units. Capture the payment from the Payments page to settle it.`,
+      `Primary order created for ${formatUnits(units)} units. Complete payment from the Payments route.`,
       { refreshPortfolio: true },
     );
   }
@@ -446,7 +450,8 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
               {tradeTab === "primary" ? (
                 <>
                   <p className="text-sm leading-6 text-muted-foreground">
-                    Approved investor accounts can create a primary order here and then complete the mock payment from the Payments route.
+                    Approved investor accounts can create a primary order here and then complete payment from the
+                    Payments route with Phantom localnet SOL or the demo INR rail.
                   </p>
                   {userCanTrade ? (
                     <form onSubmit={handlePrimaryOrder} className="space-y-3">
@@ -458,7 +463,9 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                       />
                       <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-muted-foreground">
                         Estimated payment{" "}
-                        <span className="font-semibold text-foreground">{formatInr(primaryAmount)}</span>
+                        <span className="font-semibold text-foreground">
+                          {formatInr(primaryAmount)} · {formatSol(primaryAmountSol)}
+                        </span>
                       </div>
                       <Button type="submit" className="w-full" disabled={pendingAction !== null}>
                         {pendingAction === "primary-order" ? "Creating order..." : "Create primary order"}
@@ -500,11 +507,19 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                             ? `Available to list: ${formatUnits(availableToList)} of ${formatUnits(selectedHolding.units)} units.`
                             : "No holdings detected for this asset yet."}
                       </p>
+                      <p className="text-sm text-muted-foreground">
+                        Sale proceeds from Phantom localnet trades settle to the wallet bound on your KYC profile.
+                      </p>
+                      {!hasBoundWallet ? (
+                        <p className="text-sm text-muted-foreground">
+                          Bind a wallet on the KYC page before publishing a listing.
+                        </p>
+                      ) : null}
                       <Button
                         type="submit"
                         variant="outline"
                         className="w-full"
-                        disabled={pendingAction !== null || !selectedHolding}
+                        disabled={pendingAction !== null || !selectedHolding || !hasBoundWallet}
                       >
                         {pendingAction === "create-listing" ? "Publishing..." : "Publish secondary listing"}
                       </Button>
@@ -526,6 +541,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                               <p className="font-medium text-foreground">{listing.sellerName}</p>
                               <p className="mt-1 text-sm text-muted-foreground">
                                 {formatUnits(listing.unitsRemaining)} units at {formatInr(listing.pricePerUnitInrMinor)} each
+                                {" "}· {formatSol(inrMinorToSol(listing.pricePerUnitInrMinor))} each
                               </p>
                             </div>
                             <StatusBadge value={listing.status} />
