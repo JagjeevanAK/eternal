@@ -96,7 +96,7 @@ export function PortfolioScreen() {
         {message ? <Notice tone="success">{message}</Notice> : null}
 
         {loading || !portfolio ? (
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="px-6 py-10 text-sm text-muted-foreground">
               Loading your portfolio...
             </CardContent>
@@ -104,7 +104,7 @@ export function PortfolioScreen() {
         ) : (
           <>
             <section>
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+              <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                 <CardContent className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -117,7 +117,7 @@ export function PortfolioScreen() {
                       Available local INR balance for upcoming primary and secondary payments.
                     </p>
                   </div>
-                  <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-muted-foreground">
+                  <div className="rounded-[1.2rem] border border-border bg-card/80 px-4 py-3 text-sm text-muted-foreground">
                     Managed wallet{" "}
                     <span className="font-semibold text-foreground">
                       {truncateAddress(user?.managedWalletAddress ?? null)}
@@ -136,7 +136,7 @@ export function PortfolioScreen() {
                   return (
                     <Card
                       key={holding.id}
-                      className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur"
+                      className="border-border bg-card/92 shadow-2xl backdrop-blur"
                     >
                       <CardContent className="space-y-5 px-6 py-6">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -148,7 +148,7 @@ export function PortfolioScreen() {
                               {holding.property.assetClassLabel} · {holding.property.symbol} · {formatUnits(holding.units)} units held
                             </p>
                           </div>
-                          <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-right">
+                          <div className="rounded-[1.2rem] border border-border bg-card/80 px-4 py-3 text-right">
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Current value
                             </p>
@@ -159,7 +159,7 @@ export function PortfolioScreen() {
                         </div>
 
                         <div className="grid gap-3 md:grid-cols-3">
-                          <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                          <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Average price
                             </p>
@@ -167,7 +167,7 @@ export function PortfolioScreen() {
                               {formatInr(holding.averagePriceInrMinor)}
                             </p>
                           </div>
-                          <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                          <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Listed units
                             </p>
@@ -175,7 +175,7 @@ export function PortfolioScreen() {
                               {formatUnits(holding.listedUnits)}
                             </p>
                           </div>
-                          <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                          <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Holding account
                             </p>
@@ -185,7 +185,7 @@ export function PortfolioScreen() {
                           </div>
                         </div>
 
-                        <div className="rounded-[1.4rem] border border-white/70 bg-white/80 p-4">
+                        <div className="rounded-[1.4rem] border border-border bg-card/80 p-4">
                           <p className="font-medium text-foreground">Create fixed-price listing</p>
                           <div className="mt-4 grid gap-3 md:grid-cols-2">
                             <Input

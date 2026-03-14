@@ -105,7 +105,7 @@ function MetricTile({
   hint: string;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-white/70 bg-white/80 p-4 shadow-lg shadow-sky-950/5">
+    <div className="rounded-[1.4rem] border border-border bg-card/80 p-4 shadow-lg">
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
         {label}
       </p>
@@ -601,10 +601,10 @@ export function ExchangeWorkspace() {
   }, [loadPrivateData, loadProperties, loadSelectedAsset, selectedSlug, token]);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,119,182,0.14),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(196,138,66,0.18),_transparent_26%),linear-gradient(180deg,_rgba(252,250,246,1),_rgba(244,239,229,0.94))] px-4 py-6 text-foreground sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <Card className="overflow-hidden border-white/70 bg-card/86 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="overflow-hidden border-border bg-card/86 shadow-2xl backdrop-blur">
             <CardContent className="space-y-8 px-6 py-8 sm:px-8 sm:py-10">
               <div className="space-y-5">
                 <Badge className="w-fit border-sky-500/20 bg-sky-500/10 text-sky-700">
@@ -679,7 +679,7 @@ export function ExchangeWorkspace() {
             </CardContent>
           </Card>
 
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardHeader className="space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -824,7 +824,7 @@ export function ExchangeWorkspace() {
           id="marketplace"
           className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"
         >
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardHeader className="space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -873,7 +873,7 @@ export function ExchangeWorkspace() {
                       className={cn(
                         "w-full rounded-[1.5rem] border px-4 py-4 text-left transition-all",
                         isSelected
-                          ? "border-primary/25 bg-primary/8 shadow-lg shadow-sky-950/5"
+                          ? "border-primary/25 bg-primary/8 shadow-lg"
                           : "border-border/80 bg-card hover:border-primary/20 hover:bg-muted/30",
                       )}
                     >
@@ -898,7 +898,7 @@ export function ExchangeWorkspace() {
                       </div>
 
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-3">
+                        <div className="rounded-[1.2rem] border border-border bg-card/80 p-3">
                           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                             Unit price
                           </p>
@@ -906,7 +906,7 @@ export function ExchangeWorkspace() {
                             {formatInr(property.unitPriceInrMinor)}
                           </p>
                         </div>
-                        <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-3">
+                        <div className="rounded-[1.2rem] border border-border bg-card/80 p-3">
                           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                             Available units
                           </p>
@@ -939,7 +939,7 @@ export function ExchangeWorkspace() {
 
           <Card
             id="trade-panel"
-            className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur"
+            className="border-border bg-card/92 shadow-2xl backdrop-blur"
           >
             <CardHeader className="space-y-4">
               {selectedProperty ? (
@@ -1028,7 +1028,7 @@ export function ExchangeWorkspace() {
                               inputMode="numeric"
                             />
                           </div>
-                          <div className="rounded-[1.1rem] border border-white/70 bg-white/80 px-3 py-3 text-sm text-muted-foreground">
+                          <div className="rounded-[1.1rem] border border-border bg-card/80 px-3 py-3 text-sm text-muted-foreground">
                             Gross amount{" "}
                             <span className="font-semibold text-foreground">
                               {formatInr(
@@ -1090,7 +1090,7 @@ export function ExchangeWorkspace() {
                               />
                             </div>
                           </div>
-                          <div className="rounded-[1.1rem] border border-white/70 bg-white/80 px-3 py-3 text-sm text-muted-foreground">
+                          <div className="rounded-[1.1rem] border border-border bg-card/80 px-3 py-3 text-sm text-muted-foreground">
                             {selectedHolding ? (
                               <>
                                 Available to list{" "}
@@ -1156,7 +1156,7 @@ export function ExchangeWorkspace() {
                             return (
                               <div
                                 key={listing.id}
-                                className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4"
+                                className="rounded-[1.2rem] border border-border bg-card/80 p-4"
                               >
                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                   <div>
@@ -1228,7 +1228,7 @@ export function ExchangeWorkspace() {
                             selectedAsset.trades.map((trade) => (
                               <div
                                 key={trade.id}
-                                className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4"
+                                className="rounded-[1.2rem] border border-border bg-card/80 p-4"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
@@ -1309,7 +1309,7 @@ export function ExchangeWorkspace() {
                                 href={`${API_BASE_URL}/property-documents/files/${document.id}`}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center justify-between gap-3 rounded-[1.1rem] border border-white/70 bg-white/80 px-3 py-3 text-sm text-foreground transition-colors hover:border-primary/20"
+                                className="flex items-center justify-between gap-3 rounded-[1.1rem] border border-border bg-card/80 px-3 py-3 text-sm text-foreground transition-colors hover:border-primary/20"
                               >
                                 <div>
                                   <p className="font-medium">{document.name}</p>
@@ -1344,7 +1344,7 @@ export function ExchangeWorkspace() {
         {user ? (
           <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-6">
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+              <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                 <CardHeader>
                   <CardTitle className="text-2xl">Portfolio and listings</CardTitle>
                   <CardDescription className="mt-2 text-sm leading-6">
@@ -1372,7 +1372,7 @@ export function ExchangeWorkspace() {
                           </Badge>
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                          <div className="rounded-[1.1rem] border border-white/70 bg-white/80 p-3">
+                          <div className="rounded-[1.1rem] border border-border bg-card/80 p-3">
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Average price
                             </p>
@@ -1380,7 +1380,7 @@ export function ExchangeWorkspace() {
                               {formatInr(holding.averagePriceInrMinor)}
                             </p>
                           </div>
-                          <div className="rounded-[1.1rem] border border-white/70 bg-white/80 p-3">
+                          <div className="rounded-[1.1rem] border border-border bg-card/80 p-3">
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Market value
                             </p>
@@ -1388,7 +1388,7 @@ export function ExchangeWorkspace() {
                               {formatInr(holding.marketValueInrMinor)}
                             </p>
                           </div>
-                          <div className="rounded-[1.1rem] border border-white/70 bg-white/80 p-3">
+                          <div className="rounded-[1.1rem] border border-border bg-card/80 p-3">
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Listed units
                             </p>
@@ -1418,7 +1418,7 @@ export function ExchangeWorkspace() {
                         portfolio.listings.map((listing) => (
                           <div
                             key={listing.id}
-                            className="rounded-[1.2rem] border border-white/70 bg-white/80 p-3"
+                            className="rounded-[1.2rem] border border-border bg-card/80 p-3"
                           >
                             <div className="flex items-center justify-between gap-3">
                               <div>
@@ -1450,7 +1450,7 @@ export function ExchangeWorkspace() {
                         portfolio.distributions.map((distribution) => (
                           <div
                             key={distribution.id}
-                            className="rounded-[1.2rem] border border-white/70 bg-white/80 p-3"
+                            className="rounded-[1.2rem] border border-border bg-card/80 p-3"
                           >
                             <div className="flex items-center justify-between gap-3">
                               <div>
@@ -1483,7 +1483,7 @@ export function ExchangeWorkspace() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+              <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                 <CardHeader>
                   <CardTitle className="text-2xl">Orders and payments</CardTitle>
                   <CardDescription className="mt-2 text-sm leading-6">
@@ -1497,7 +1497,7 @@ export function ExchangeWorkspace() {
                       orders.map((order) => (
                         <div
                           key={order.id}
-                          className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4"
+                          className="rounded-[1.2rem] border border-border bg-card/80 p-4"
                         >
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
@@ -1553,7 +1553,7 @@ export function ExchangeWorkspace() {
                       payments.payments.map((payment) => (
                         <div
                           key={payment.id}
-                          className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4"
+                          className="rounded-[1.2rem] border border-border bg-card/80 p-4"
                         >
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
@@ -1605,7 +1605,7 @@ export function ExchangeWorkspace() {
             </div>
 
             <div className="space-y-6">
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+              <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                 <CardHeader>
                   <CardTitle className="text-2xl">KYC and wallet controls</CardTitle>
                   <CardDescription className="mt-2 text-sm leading-6">
@@ -1733,7 +1733,7 @@ export function ExchangeWorkspace() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+              <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                 <CardHeader>
                   <CardTitle className="text-2xl">Next actions</CardTitle>
                   <CardDescription className="mt-2 text-sm leading-6">
@@ -1752,7 +1752,7 @@ export function ExchangeWorkspace() {
                       {dashboard.nextSteps.map((step) => (
                         <div
                           key={step}
-                          className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4 text-sm leading-6 text-muted-foreground"
+                          className="rounded-[1.2rem] border border-border bg-card/80 p-4 text-sm leading-6 text-muted-foreground"
                         >
                           {step}
                         </div>
@@ -1773,7 +1773,7 @@ export function ExchangeWorkspace() {
                       dashboard.notifications.map((notification) => (
                         <div
                           key={notification.id}
-                          className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4"
+                          className="rounded-[1.2rem] border border-border bg-card/80 p-4"
                         >
                           <p className="font-medium text-foreground">{notification.title}</p>
                           <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -1798,7 +1798,7 @@ export function ExchangeWorkspace() {
         ) : null}
 
         <section className="grid gap-6 lg:grid-cols-[1fr_auto]">
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -1821,7 +1821,7 @@ export function ExchangeWorkspace() {
             variant="outline"
             onClick={() => void refreshAll()}
             disabled={actionPending !== null || sessionLoading}
-            className="h-auto rounded-[1.25rem] border-white/70 bg-card/92 px-5 py-4 shadow-lg shadow-sky-950/5"
+            className="h-auto rounded-[1.25rem] border-border bg-card/92 px-5 py-4 shadow-lg"
           >
             <span className="inline-flex items-center gap-2">
               <RefreshCcw className="h-4 w-4" />

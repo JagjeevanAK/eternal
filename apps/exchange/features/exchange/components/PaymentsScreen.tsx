@@ -177,14 +177,14 @@ export function PaymentsScreen() {
         {message ? <Notice tone="success">{message}</Notice> : null}
 
         {loading || !state ? (
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="px-6 py-10 text-sm text-muted-foreground">
               Loading payments...
             </CardContent>
           </Card>
         ) : (
           <>
-            <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+            <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
               <CardContent className="px-6 py-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Available mock INR balance
@@ -209,7 +209,7 @@ export function PaymentsScreen() {
                 state.payments.map((payment) => (
                   <Card
                     key={payment.id}
-                    className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur"
+                    className="border-border bg-card/92 shadow-2xl backdrop-blur"
                   >
                     <CardContent className="space-y-5 px-6 py-6">
                       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -228,7 +228,7 @@ export function PaymentsScreen() {
                       </div>
 
                       <div className="grid gap-3 md:grid-cols-3">
-                        <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                        <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                             Amount
                           </p>
@@ -241,13 +241,13 @@ export function PaymentsScreen() {
                             </p>
                           ) : null}
                         </div>
-                        <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                        <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                             Units
                           </p>
                           <p className="mt-2 font-semibold text-foreground">{payment.order.units}</p>
                         </div>
-                        <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                        <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                             Method
                           </p>
@@ -284,7 +284,7 @@ export function PaymentsScreen() {
                       </div>
 
                       {payment.solanaQuote?.recipients.length ? (
-                        <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                        <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                             Localnet settlement
                           </p>
@@ -292,7 +292,7 @@ export function PaymentsScreen() {
                             {payment.solanaQuote.recipients.map((recipient) => (
                               <div
                                 key={`${payment.id}:${recipient.role}:${recipient.address}`}
-                                className="flex flex-col gap-1 rounded-[1rem] border border-slate-200/70 bg-slate-50/80 px-3 py-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between"
+                                className="flex flex-col gap-1 rounded-[1rem] border border-border bg-card/80 px-3 py-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between"
                               >
                                 <div>
                                   <p className="font-semibold text-foreground">{recipient.label}</p>

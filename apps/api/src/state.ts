@@ -21,6 +21,19 @@ const STATE_PATH = path.join(STORAGE_DIR, "state.json");
 const UPLOADS_DIR = path.join(STORAGE_DIR, "uploads");
 const VERIFICATION_UPLOAD_DIR = path.join(UPLOADS_DIR, "verification");
 const PROPERTY_DOCUMENT_UPLOAD_DIR = path.join(UPLOADS_DIR, "property-documents");
+const LOCAL_API_PORT = Number(process.env.PORT ?? "4000");
+const LOCAL_API_BASE_URL = process.env.LOCAL_API_URL ?? `http://127.0.0.1:${LOCAL_API_PORT}`;
+const PROPERTY_DOCUMENT_SEED_ASSET_DIR = path.join(ROOT_DIR, "apps/api/seed-assets/property-documents");
+const SEED_PROPERTY_DOCUMENT_ASSETS: Record<string, string> = {
+  "property_whitefield_income_commons:Title Report": "seed-title-report.jpeg",
+  "property_whitefield_income_commons:Lease Summary": "seed-lease-summary.jpeg",
+  "property_whitefield_income_commons:Valuation Memo": "seed-valuation-memo.png",
+  "property_monsoon_logistics_growth_shares:Shareholder Rights Summary": "seed-title-report.jpeg",
+  "property_monsoon_logistics_growth_shares:Growth Round Memo": "seed-lease-summary.jpeg",
+  "property_monsoon_logistics_growth_shares:Financial Snapshot": "seed-valuation-memo.png",
+  "property_pune_logistics_land_parcel:Project Teaser": "seed-lease-summary.jpeg",
+  "property_pune_logistics_land_parcel:Land Due Diligence": "seed-title-report.jpeg",
+};
 
 const nowIso = () => new Date().toISOString();
 
@@ -31,6 +44,68 @@ const plusDays = (days: number) => {
 };
 
 const makeId = (prefix: string) => `${prefix}_${crypto.randomUUID().slice(0, 8)}`;
+
+const buildPropertyDocumentUrl = (documentId: string) =>
+  `${LOCAL_API_BASE_URL}/property-documents/files/${documentId}`;
+
+const getSeedPropertyDocumentAssetFileName = (propertyId: string, name: string) =>
+  SEED_PROPERTY_DOCUMENT_ASSETS[`${propertyId}:${name}`] ?? null;
+
+const inferSeedPropertyDocumentMimeType = (fileName: string) => {
+  const extension = path.extname(fileName).toLowerCase();
+
+  if (extension === ".png") {
+    return "image/png";
+  }
+
+  if (extension === ".jpg" || extension === ".jpeg") {
+    return "image/jpeg";
+  }
+
+  if (extension === ".pdf") {
+    return "application/pdf";
+  }
+
+  return "application/octet-stream";
+};
+
+const materializeSeedPropertyDocumentFile = ({
+  id,
+  propertyId,
+  name,
+  updatedAt,
+}: Pick<PropertyDocument, "id" | "propertyId" | "name" | "updatedAt">) => {
+  const assetFileName = getSeedPropertyDocumentAssetFileName(propertyId, name);
+  if (!assetFileName) {
+    return null;
+  }
+
+  const absoluteAssetPath = path.join(PROPERTY_DOCUMENT_SEED_ASSET_DIR, assetFileName);
+  if (!existsSync(absoluteAssetPath)) {
+    return null;
+  }
+
+  const bytes = readFileSync(absoluteAssetPath);
+
+  return {
+    mimeType: inferSeedPropertyDocumentMimeType(assetFileName),
+    sizeBytes: bytes.byteLength,
+    uploadedAt: updatedAt,
+    storagePath: writePropertyDocumentFile(propertyId, id, assetFileName, bytes),
+  };
+};
+
+const hasSeededPropertyDocumentFile = (storagePath?: string) => {
+  if (!storagePath) {
+    return false;
+  }
+
+  try {
+    return existsSync(getPropertyDocumentAbsolutePath(storagePath));
+  } catch {
+    return false;
+  }
+};
 
 const slugify = (value: string) =>
   value
@@ -155,16 +230,28 @@ const document = (
   category: string,
   source: PropertyDocument["source"],
   status: PropertyDocument["status"] = "approved",
-): PropertyDocument => ({
-  id: makeId("doc"),
-  propertyId,
-  name,
-  category,
-  source,
-  status,
-  url: `https://local.eternal.test/docs/${propertyId}/${name.toLowerCase().replace(/\s+/g, "-")}.pdf`,
-  updatedAt: nowIso(),
-});
+): PropertyDocument => {
+  const id = makeId("doc");
+  const updatedAt = nowIso();
+  const seededFile = materializeSeedPropertyDocumentFile({ id, propertyId, name, updatedAt });
+
+  return {
+    id,
+    propertyId,
+    name,
+    category,
+    source,
+    status,
+    url: seededFile
+      ? buildPropertyDocumentUrl(id)
+      : `https://local.eternal.test/docs/${propertyId}/${name.toLowerCase().replace(/\s+/g, "-")}.pdf`,
+    updatedAt,
+    mimeType: seededFile?.mimeType,
+    sizeBytes: seededFile?.sizeBytes,
+    uploadedAt: seededFile?.uploadedAt,
+    storagePath: seededFile?.storagePath,
+  };
+};
 
 const notification = (userId: string, title: string, body: string): Notification => ({
   id: makeId("notification"),
@@ -730,6 +817,36 @@ const normalizeState = (state: LocalState): LocalState => ({
   })),
 });
 
+const backfillSeedPropertyDocuments = (state: LocalState): LocalState => ({
+  ...state,
+  propertyDocuments: state.propertyDocuments.map((value) => {
+    const assetFileName = getSeedPropertyDocumentAssetFileName(value.propertyId, value.name);
+    if (!assetFileName) {
+      return value;
+    }
+
+    const expectedUrl = buildPropertyDocumentUrl(value.id);
+    const hasFile = hasSeededPropertyDocumentFile(value.storagePath);
+    const seededFile = hasFile
+      ? null
+      : materializeSeedPropertyDocumentFile({
+          id: value.id,
+          propertyId: value.propertyId,
+          name: value.name,
+          updatedAt: value.updatedAt,
+        });
+
+    return {
+      ...value,
+      url: expectedUrl,
+      mimeType: value.mimeType ?? seededFile?.mimeType ?? inferSeedPropertyDocumentMimeType(assetFileName),
+      sizeBytes: value.sizeBytes ?? seededFile?.sizeBytes,
+      uploadedAt: value.uploadedAt ?? seededFile?.uploadedAt ?? value.updatedAt,
+      storagePath: hasFile ? value.storagePath : seededFile?.storagePath ?? value.storagePath,
+    };
+  }),
+});
+
 const hydrateAuthState = (state: LocalState): LocalState => {
   const authSnapshot = loadAuthSnapshot();
   if (authSnapshot.users.length === 0 && authSnapshot.sessions.length === 0) {
@@ -816,7 +933,7 @@ export const ensureStateFile = () => {
 export const readState = (): LocalState => {
   ensureStateFile();
   const parsed = JSON.parse(readFileSync(STATE_PATH, "utf8")) as LocalState;
-  const normalized = hydrateAuthState(normalizeState(parsed));
+  const normalized = backfillSeedPropertyDocuments(hydrateAuthState(normalizeState(parsed)));
 
   if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
     writeState(normalized);

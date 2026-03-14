@@ -53,7 +53,7 @@ export function OrdersScreen() {
         {error ? <Notice tone="error">{error}</Notice> : null}
 
         {loading ? (
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="px-6 py-10 text-sm text-muted-foreground">
               Loading orders...
             </CardContent>
@@ -63,7 +63,7 @@ export function OrdersScreen() {
             {orders.map((order) => (
               <Card
                 key={order.id}
-                className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur"
+                className="border-border bg-card/92 shadow-2xl backdrop-blur"
               >
                 <CardContent className="space-y-5 px-6 py-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -82,7 +82,7 @@ export function OrdersScreen() {
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-4">
-                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                    <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         Gross amount
                       </p>
@@ -90,7 +90,7 @@ export function OrdersScreen() {
                         {formatInr(order.grossAmountInrMinor)}
                       </p>
                     </div>
-                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                    <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         Fee
                       </p>
@@ -98,7 +98,7 @@ export function OrdersScreen() {
                         {formatInr(order.feeAmountInrMinor)}
                       </p>
                     </div>
-                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                    <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         Created
                       </p>
@@ -106,7 +106,7 @@ export function OrdersScreen() {
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
-                    <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                    <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         Payment
                       </p>

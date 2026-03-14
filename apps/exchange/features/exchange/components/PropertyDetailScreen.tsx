@@ -232,7 +232,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+      <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
         <CardContent className="px-6 py-10 text-sm text-muted-foreground">
           Loading asset room...
         </CardContent>
@@ -265,7 +265,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
         <section className="space-y-6">
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="space-y-6 px-6 py-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -292,7 +292,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
               </div>
 
               <div className="grid gap-3 md:grid-cols-4">
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Minimum ticket
                   </p>
@@ -300,7 +300,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                     {formatInr(property.minimumInvestmentInrMinor)}
                   </p>
                 </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Unit price
                   </p>
@@ -308,7 +308,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                     {formatInr(property.unitPriceInrMinor)}
                   </p>
                 </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Target IRR
                   </p>
@@ -316,7 +316,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                     {formatPercent(property.targetIrrBps)}
                   </p>
                 </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Active listings
                   </p>
@@ -328,7 +328,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
             </CardContent>
           </Card>
 
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardHeader>
               <CardTitle className="text-2xl">Documents</CardTitle>
             </CardHeader>
@@ -340,7 +340,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                     href={document.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4 transition-colors hover:border-primary/20"
+                    className="rounded-[1.3rem] border border-border bg-card/80 p-4 transition-colors hover:border-primary/20"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -363,7 +363,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
             </CardContent>
           </Card>
 
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardHeader>
               <CardTitle className="text-2xl">Recent trades</CardTitle>
             </CardHeader>
@@ -372,7 +372,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                 state.trades.map((trade) => (
                   <div
                     key={trade.id}
-                    className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4"
+                    className="rounded-[1.3rem] border border-border bg-card/80 p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -412,7 +412,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
         </section>
 
         <aside className="space-y-6">
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-2xl">Trade</CardTitle>
@@ -424,7 +424,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                       "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                       tradeTab === "primary"
                         ? "border-primary/20 bg-primary/10 text-primary"
-                        : "border-white/70 bg-white/80 text-muted-foreground hover:text-foreground",
+                        : "border-border bg-card/80 text-muted-foreground hover:text-foreground",
                     )}
                   >
                     Primary
@@ -437,7 +437,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                         "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                         tradeTab === "secondary"
                           ? "border-primary/20 bg-primary/10 text-primary"
-                          : "border-white/70 bg-white/80 text-muted-foreground hover:text-foreground",
+                          : "border-border bg-card/80 text-muted-foreground hover:text-foreground",
                       )}
                     >
                       Secondary
@@ -461,7 +461,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                         inputMode="numeric"
                         placeholder="Units"
                       />
-                      <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm text-muted-foreground">
+                      <div className="rounded-[1.2rem] border border-border bg-card/80 px-4 py-3 text-sm text-muted-foreground">
                         Estimated payment{" "}
                         <span className="font-semibold text-foreground">
                           {formatInr(primaryAmount)} · {formatSol(primaryAmountSol)}
@@ -485,7 +485,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
               ) : (
                 <>
                   {userCanTrade ? (
-                    <form onSubmit={handleCreateListing} className="space-y-3 rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
+                    <form onSubmit={handleCreateListing} className="space-y-3 rounded-[1.3rem] border border-border bg-card/80 p-4">
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Input
                           value={sellUnits}
@@ -534,7 +534,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
                       return (
                         <div
                           key={listing.id}
-                          className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4"
+                          className="rounded-[1.3rem] border border-border bg-card/80 p-4"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
@@ -583,7 +583,7 @@ export function PropertyDetailScreen({ slug }: { slug: string }) {
             </CardContent>
           </Card>
 
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardHeader>
               <CardTitle className="text-2xl">Chain metadata</CardTitle>
             </CardHeader>

@@ -261,13 +261,13 @@ export function KycScreen() {
         {message ? <Notice tone="success">{message}</Notice> : null}
 
         {loading ? (
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="px-6 py-10 text-sm text-muted-foreground">
               Loading compliance record...
             </CardContent>
           </Card>
         ) : isKycApproved ? (
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardHeader className="flex flex-row items-start justify-between gap-4">
               <div>
                 <CardTitle className="text-2xl">KYC approved</CardTitle>
@@ -286,7 +286,7 @@ export function KycScreen() {
                     : "This account is approved and ready for trading."}
                 </p>
               </div>
-              <div className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
+              <div className="rounded-[1.3rem] border border-border bg-card/80 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Current status
                 </p>
@@ -301,12 +301,12 @@ export function KycScreen() {
           </Card>
         ) : (
           <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-            <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+            <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-2xl">KYC status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between gap-3 rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
+                <div className="flex items-center justify-between gap-3 rounded-[1.3rem] border border-border bg-card/80 p-4">
                   <div>
                     <p className="font-medium text-foreground">Current review state</p>
                     <p className="mt-1 text-sm text-muted-foreground">
@@ -373,12 +373,12 @@ export function KycScreen() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+            <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-2xl">Wallet binding</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.3rem] border border-border bg-card/80 p-4">
                   <p className="font-medium text-foreground">Managed wallet</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {user?.managedWalletAddress ?? "Unavailable"}
@@ -398,7 +398,7 @@ export function KycScreen() {
                       </div>
                       <StatusBadge value="approved" />
                     </div>
-                    <div className="mt-4 rounded-[1.1rem] border border-white/70 bg-white/80 p-3 text-sm">
+                    <div className="mt-4 rounded-[1.1rem] border border-border bg-card/80 p-3 text-sm">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                         Bound address
                       </p>
@@ -417,7 +417,7 @@ export function KycScreen() {
                   </div>
                 ) : (
                   <>
-                    <div className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
+                    <div className="rounded-[1.3rem] border border-border bg-card/80 p-4">
                       <p className="font-medium text-foreground">Detected Solana wallets</p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Connect and bind in one step. For Phantom, make sure the extension is unlocked and has a Solana account available.

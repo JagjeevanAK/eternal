@@ -53,20 +53,20 @@ export function DocumentsScreen() {
         {error ? <Notice tone="error">{error}</Notice> : null}
 
         {loading || !state ? (
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="px-6 py-10 text-sm text-muted-foreground">
               Loading compliance documents...
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-6 xl:grid-cols-[0.72fr_1.28fr]">
-            <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+            <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-2xl">Investor KYC</CardTitle>
               </CardHeader>
               <CardContent>
                 {state.kycRecord ? (
-                  <div className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4">
+                  <div className="rounded-[1.3rem] border border-border bg-card/80 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-medium text-foreground">Current compliance record</p>
                       <StatusBadge value={state.kycRecord.status} />
@@ -88,7 +88,7 @@ export function DocumentsScreen() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+            <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-2xl">Accessible asset documents</CardTitle>
               </CardHeader>
@@ -100,7 +100,7 @@ export function DocumentsScreen() {
                       href={document.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-[1.3rem] border border-white/70 bg-white/80 p-4 transition-colors hover:border-primary/20"
+                      className="rounded-[1.3rem] border border-border bg-card/80 p-4 transition-colors hover:border-primary/20"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>

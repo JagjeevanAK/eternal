@@ -54,7 +54,7 @@ export function DashboardScreen() {
         {error ? <Notice tone="error">{error}</Notice> : null}
 
         {loading || !dashboard ? (
-          <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+          <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
             <CardContent className="px-6 py-10 text-sm text-muted-foreground">
               Loading workspace summary...
             </CardContent>
@@ -85,12 +85,12 @@ export function DashboardScreen() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-              <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+              <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                 <CardHeader>
                   <CardTitle className="text-2xl">Account readiness</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-[1.4rem] border border-white/70 bg-white/80 p-4">
+                  <div className="rounded-[1.4rem] border border-border bg-card/80 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-lg font-semibold text-foreground">{dashboard.user.fullName}</p>
@@ -122,7 +122,7 @@ export function DashboardScreen() {
                       dashboard.nextSteps.map((step) => (
                         <div
                           key={step}
-                          className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-3 text-sm leading-6 text-muted-foreground"
+                          className="rounded-[1.2rem] border border-border bg-card/80 px-4 py-3 text-sm leading-6 text-muted-foreground"
                         >
                           {step}
                         </div>
@@ -138,7 +138,7 @@ export function DashboardScreen() {
               </Card>
 
               <div className="space-y-6">
-                <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+                <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                   <CardHeader>
                     <CardTitle className="text-2xl">Featured live assets</CardTitle>
                   </CardHeader>
@@ -148,7 +148,7 @@ export function DashboardScreen() {
                         <Link
                           key={property.id}
                           href={`/marketplace/${property.slug}`}
-                          className="block rounded-[1.4rem] border border-white/70 bg-white/80 p-4 transition-colors hover:border-primary/20"
+                          className="block rounded-[1.4rem] border border-border bg-card/80 p-4 transition-colors hover:border-primary/20"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
@@ -179,7 +179,7 @@ export function DashboardScreen() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+                <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
                   <CardHeader>
                     <CardTitle className="text-2xl">Recent notifications</CardTitle>
                   </CardHeader>
@@ -188,7 +188,7 @@ export function DashboardScreen() {
                       dashboard.notifications.map((notification) => (
                         <div
                           key={notification.id}
-                          className="rounded-[1.4rem] border border-white/70 bg-white/80 p-4"
+                          className="rounded-[1.4rem] border border-border bg-card/80 p-4"
                         >
                           <div className="flex items-start gap-3">
                             <Bell className="mt-0.5 h-4 w-4 text-primary" />

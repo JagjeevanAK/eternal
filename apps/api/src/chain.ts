@@ -572,6 +572,39 @@ const syncListingFromAccount = (
   listing.onChainAddress = address.toBase58();
 };
 
+const findExistingListingRecord = async (
+  propertyAddress: PublicKey,
+  sellerAddress: PublicKey,
+  listing: Listing,
+) => {
+  const platform = await authorityProgram().account.platformConfig.fetch(platformPda());
+  const listingCount = toNumber(platform.listingCount);
+
+  for (let sequence = 1; sequence <= listingCount; sequence += 1) {
+    const address = listingPda(propertyAddress, sellerAddress, sequence);
+    const account = await fetchMaybe(authorityProgram().account.secondaryListing, address);
+    if (!account) {
+      continue;
+    }
+
+    const accountStatus = listingStatusFromChain(account.status as Record<string, unknown>);
+    const accountUnitsListed = toNumber(account.unitsListed);
+    const accountUnitsRemaining = toNumber(account.unitsRemaining);
+    const accountPricePerUnit = toNumber(account.pricePerUnitInrMinor);
+
+    if (
+      accountStatus === listing.status &&
+      accountUnitsListed === listing.unitsListed &&
+      accountUnitsRemaining === listing.unitsRemaining &&
+      accountPricePerUnit === listing.pricePerUnitInrMinor
+    ) {
+      return { address, account };
+    }
+  }
+
+  return null;
+};
+
 const syncListingRecord = async (state: LocalState, listing: Listing) => {
   if (listing.status !== "active" && listing.status !== "partially_filled") {
     return;
@@ -583,6 +616,15 @@ const syncListingRecord = async (state: LocalState, listing: Listing) => {
   await syncHoldingRecord(state, sellerHolding);
   const propertyContext = await ensureProperty(state, property);
 
+  if (listing.onChainAddress) {
+    const currentAddress = new PublicKey(listing.onChainAddress);
+    const account = await fetchMaybe(authorityProgram().account.secondaryListing, currentAddress);
+    if (account) {
+      syncListingFromAccount(listing, currentAddress, account);
+      return;
+    }
+  }
+
   if (listing.sequenceId != null) {
     const address = listingPda(propertyContext.propertyAddress, seller.signer.publicKey, listing.sequenceId);
     const account = await fetchMaybe(authorityProgram().account.secondaryListing, address);
@@ -590,6 +632,16 @@ const syncListingRecord = async (state: LocalState, listing: Listing) => {
       syncListingFromAccount(listing, address, account);
       return;
     }
+  }
+
+  const existingListing = await findExistingListingRecord(
+    propertyContext.propertyAddress,
+    seller.signer.publicKey,
+    listing,
+  );
+  if (existingListing) {
+    syncListingFromAccount(listing, existingListing.address, existingListing.account);
+    return;
   }
 
   const sequence = await nextListingSequence();

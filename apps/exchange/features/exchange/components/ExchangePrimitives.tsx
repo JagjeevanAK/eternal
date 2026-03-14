@@ -38,7 +38,7 @@ export function MetricTile({
   detail: string;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-white/70 bg-white/80 p-4 shadow-lg shadow-sky-950/5">
+    <div className="rounded-[1.4rem] border border-border bg-card/80 p-4 shadow-lg">
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
         {label}
       </p>

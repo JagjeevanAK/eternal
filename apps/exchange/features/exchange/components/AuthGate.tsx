@@ -20,7 +20,7 @@ export function AuthGate({ children, allowedRoles }: AuthGateProps) {
 
   if (loading) {
     return (
-      <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+      <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
         <CardContent className="px-6 py-10 text-sm text-muted-foreground">
           Loading your exchange workspace...
         </CardContent>
@@ -30,7 +30,7 @@ export function AuthGate({ children, allowedRoles }: AuthGateProps) {
 
   if (!user) {
     return (
-      <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+      <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
         <CardHeader>
           <CardTitle className="text-2xl">Sign in to continue</CardTitle>
         </CardHeader>
@@ -49,7 +49,7 @@ export function AuthGate({ children, allowedRoles }: AuthGateProps) {
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return (
-      <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+      <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
         <CardHeader>
           <CardTitle className="text-2xl">Access restricted</CardTitle>
         </CardHeader>

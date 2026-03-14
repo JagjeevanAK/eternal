@@ -86,7 +86,7 @@ export function MarketplaceScreen() {
 
       {error ? <Notice tone="error">{error}</Notice> : null}
 
-      <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+      <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
         <CardHeader className="gap-4">
           <CardTitle className="text-2xl">Filters</CardTitle>
           <div className="flex flex-col gap-3 lg:flex-row">
@@ -109,7 +109,7 @@ export function MarketplaceScreen() {
                   className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                     assetFilter === item.value
                       ? "border-primary/20 bg-primary/10 text-primary"
-                      : "border-white/70 bg-white/80 text-muted-foreground hover:text-foreground"
+                      : "border-border bg-card/80 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {item.label}
@@ -121,7 +121,7 @@ export function MarketplaceScreen() {
       </Card>
 
       {loading ? (
-        <Card className="border-white/70 bg-card/92 shadow-2xl shadow-sky-950/10 backdrop-blur">
+        <Card className="border-border bg-card/92 shadow-2xl backdrop-blur">
           <CardContent className="px-6 py-10 text-sm text-muted-foreground">
             Loading live marketplace inventory...
           </CardContent>
@@ -132,7 +132,7 @@ export function MarketplaceScreen() {
             <Link
               key={property.id}
               href={`/marketplace/${property.slug}`}
-              className="block rounded-[1.8rem] border border-white/70 bg-card/92 p-6 shadow-2xl shadow-sky-950/10 backdrop-blur transition-colors hover:border-primary/20"
+              className="block rounded-[1.8rem] border border-border bg-card/92 p-6 shadow-2xl backdrop-blur transition-colors hover:border-primary/20"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -151,13 +151,13 @@ export function MarketplaceScreen() {
               <p className="mt-4 text-sm leading-6 text-muted-foreground">{property.summary}</p>
 
               <div className="mt-6 grid gap-3 md:grid-cols-3">
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Asset type
                   </p>
                   <p className="mt-2 text-lg font-semibold text-foreground">{property.assetType}</p>
                 </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Minimum ticket
                   </p>
@@ -165,7 +165,7 @@ export function MarketplaceScreen() {
                     {formatInr(property.minimumInvestmentInrMinor)}
                   </p>
                 </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/80 p-4">
+                <div className="rounded-[1.2rem] border border-border bg-card/80 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Unit price
                   </p>

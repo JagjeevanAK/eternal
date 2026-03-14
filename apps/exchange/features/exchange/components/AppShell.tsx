@@ -16,6 +16,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { StatusBadge } from "@/features/exchange/components/StatusBadge";
 import { useSession } from "@/features/exchange/context/SessionContext";
 import { formatRole, truncateAddress } from "@/features/exchange/lib/format";
@@ -172,8 +173,8 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,119,182,0.14),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(196,138,66,0.18),_transparent_26%),linear-gradient(180deg,_rgba(252,250,246,1),_rgba(244,239,229,0.94))] text-foreground">
-      <header className="sticky top-0 z-50 border-b border-white/60 bg-[#fcfaf6]/90 backdrop-blur">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-3">
@@ -188,12 +189,13 @@ export function AppShell({ children }: AppShellProps) {
               ) : user ? (
                 <>
                   {showKycNavigation ? <StatusBadge value={user.kycStatus} /> : null}
+                  <ThemeToggle />
                   <div className="group relative">
                     <button
                       type="button"
-                      className="flex items-center gap-3 rounded-full border border-white/70 bg-white/88 px-2.5 py-2 shadow-sm shadow-sky-950/5 transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                      className="flex items-center gap-3 rounded-full border border-border bg-card/88 px-2.5 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                     >
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(0,119,182,0.16),rgba(196,138,66,0.2))] text-sm font-semibold text-foreground">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-foreground">
                         {userInitials}
                       </div>
                       <div className="min-w-0 text-left">
@@ -205,8 +207,8 @@ export function AppShell({ children }: AppShellProps) {
                       <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
                     </button>
 
-                    <div className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-72 translate-y-2 rounded-[1.5rem] border border-white/70 bg-[#fcfaf6]/96 p-3 opacity-0 shadow-2xl shadow-sky-950/10 transition-all duration-150 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
-                      <div className="rounded-[1.2rem] border border-white/70 bg-white/85 p-4">
+                    <div className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-72 translate-y-2 rounded-[1.5rem] border border-border bg-background/96 p-3 opacity-0 shadow-2xl transition-all duration-150 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                      <div className="rounded-[1.2rem] border border-border bg-card/85 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                           {formatRole(user.role)}
                         </p>
@@ -222,7 +224,7 @@ export function AppShell({ children }: AppShellProps) {
                         ) : null}
                       </div>
 
-                      <div className="mt-3 rounded-[1.2rem] border border-white/70 bg-white/85 p-3">
+                      <div className="mt-3 rounded-[1.2rem] border border-border bg-card/85 p-3">
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                             Wallet
@@ -234,7 +236,7 @@ export function AppShell({ children }: AppShellProps) {
                         <button
                           type="button"
                           onClick={() => setWalletPickerOpen((current) => !current)}
-                          className="mt-3 flex w-full items-center justify-between gap-3 rounded-[1rem] border border-white/70 bg-[#fcfaf6] px-3 py-3 text-left transition-colors hover:border-primary/20 hover:bg-primary/5"
+                          className="mt-3 flex w-full items-center justify-between gap-3 rounded-[1rem] border border-border bg-background px-3 py-3 text-left transition-colors hover:border-primary/20 hover:bg-primary/5"
                         >
                           <div className="flex items-center gap-3">
                             {activeWalletEntry ? (
@@ -244,7 +246,7 @@ export function AppShell({ children }: AppShellProps) {
                                 className="h-9 w-9 rounded-md"
                               />
                             ) : (
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(0,119,182,0.12),rgba(196,138,66,0.16))] text-xs font-semibold text-foreground">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-foreground">
                                 {currentWalletName.slice(0, 1).toUpperCase()}
                               </div>
                             )}
@@ -279,9 +281,9 @@ export function AppShell({ children }: AppShellProps) {
                                     disabled={pendingWalletName !== null}
                                     className={cn(
                                       "flex w-full items-center justify-between gap-3 rounded-[1rem] border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-                                      isActive
+                                       isActive
                                         ? "border-emerald-500/20 bg-emerald-500/10"
-                                        : "border-white/70 bg-[#fcfaf6] hover:border-primary/20 hover:bg-primary/5",
+                                        : "border-border bg-background hover:border-primary/20 hover:bg-primary/5",
                                     )}
                                   >
                                     <div className="flex items-center gap-3">
@@ -304,7 +306,7 @@ export function AppShell({ children }: AppShellProps) {
                                 );
                               })
                             ) : (
-                              <p className="rounded-[1rem] border border-dashed border-white/70 bg-[#fcfaf6] px-3 py-3 text-xs text-muted-foreground">
+                              <p className="rounded-[1rem] border border-dashed border-border bg-background px-3 py-3 text-xs text-muted-foreground">
                                 No compatible wallets detected in this browser.
                               </p>
                             )}
@@ -335,6 +337,7 @@ export function AppShell({ children }: AppShellProps) {
                 </>
               ) : (
                 <>
+                  <ThemeToggle />
                   <Button asChild variant="outline">
                     <Link href="/signup">Create account</Link>
                   </Button>
@@ -359,7 +362,7 @@ export function AppShell({ children }: AppShellProps) {
                     "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                     active
                       ? "border-primary/20 bg-primary/10 text-primary"
-                      : "border-white/70 bg-white/80 text-muted-foreground hover:text-foreground",
+                      : "border-border bg-card/80 text-muted-foreground hover:text-foreground",
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -374,7 +377,7 @@ export function AppShell({ children }: AppShellProps) {
                   "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                   pathname === "/kyc"
                     ? "border-primary/20 bg-primary/10 text-primary"
-                    : "border-white/70 bg-white/80 text-muted-foreground hover:text-foreground",
+                    : "border-border bg-card/80 text-muted-foreground hover:text-foreground",
                 )}
               >
                 <ShieldCheck className="h-4 w-4" />
