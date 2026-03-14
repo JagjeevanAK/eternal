@@ -286,7 +286,63 @@ solana account <HOLDING_ADDRESS> --url http://127.0.0.1:8899
 
 That is the cleanest CLI proof that the exchange actions are hitting Solana localnet.
 
-## 8. Notes
+## 8. Funding Phantom On Localnet
+
+Yes, you can put **localnet SOL** into Phantom.
+
+Use:
+
+```bash
+solana airdrop 20 <PHANTOM_WALLET_ADDRESS> --url http://127.0.0.1:8899
+```
+
+Check the balance with:
+
+```bash
+solana balance <PHANTOM_WALLET_ADDRESS> --url http://127.0.0.1:8899
+```
+
+If you want this to happen automatically when starting the stack, use:
+
+```bash
+DEMO_AIRDROP_WALLETS=<PHANTOM_WALLET_ADDRESS> DEMO_AIRDROP_SOL=20 bun dev
+```
+
+or add those values in your environment before running `bun dev`.
+
+Important:
+
+- this funds the Phantom wallet with **localnet SOL**
+- it is useful to prove the wallet is real and connected to localnet
+- but it does **not** increase buying power inside the exchange app today
+
+Why:
+
+- the app currently buys assets using **mock INR balance**
+- payment capture happens off-chain first
+- after that, settlement is pushed to Solana localnet
+
+So there are two different balances in the current architecture:
+
+1. Phantom/localnet SOL balance  
+Used for wallet presence and localnet wallet activity
+
+2. Exchange mock INR balance  
+Used by the app to pay for primary and secondary orders
+
+If your goal is only:
+
+- "show Phantom has money on localnet"
+
+then `solana airdrop` is enough.
+
+If your goal is:
+
+- "actually buy assets in this app"
+
+then you need enough **mock INR balance** on the investor account, not just SOL in Phantom.
+
+## 9. Notes
 
 - Localnet data is ephemeral unless you keep the same validator state running.
 - Primary settlements write the settlement signature and sync the holding account on-chain.
